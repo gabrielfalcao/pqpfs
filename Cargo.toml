@@ -1,0 +1,33 @@
+[package]
+name = "pqpfs"
+version = "0.1.0"
+edition = "2021"
+description = "Post-Quantum Perfect Forward Secrecy"
+
+[dependencies]
+clap = { version = "4.5.20", features = ["derive", "env", "string", "unicode", "wrap_help"] }
+serde = { version = "1.0.213", features = ["derive"] }
+base32 = "0.5.1"
+bincode = "1.3.3"
+bzip2 = "0.4.4"
+t16 = { path = "../t16" }
+enum-to-string = { path = "../gadgets/packages/enum-to-string" }
+flate2 = "1.0.34"
+gzip = "0.1.2"
+iocore = { path = "../gadgets/packages/iocore" }
+otpauth = "0.5.1"
+rand = "0.8.5"
+rsa = "0.9.6"
+ed25519 = { version = "2.2.3", features = ["serde", "pem", "pkcs8"] }
+pkcs8 = { version = "0.10.2", features = ["des-insecure", "std", "pkcs5", "3des"] }
+pkcs5 = { version = "0.7.1", features = ["des-insecure", "3des"] }
+des = "0.8.1"
+crypto-common = { version = "0.1.6", features = ["std", "rand_core"] }
+security-framework = { version = "3.0.0", features = ["OSX_10_13", "log"] }
+
+
+[lib]
+name = "pqpfs"
+path = "pqpfs/lib.rs"
+doctest = false
+bench = false
