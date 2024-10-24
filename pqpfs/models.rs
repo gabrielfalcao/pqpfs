@@ -138,6 +138,14 @@ pub struct KeyStuff {
     private_key_pair: Keypair,
     signature: Signature,
 }
+impl KeyStuff {
+    pub fn encrypt(&self, data: &[u8]) -> Vec<u8>{
+        todo!("encrypt data: {:#?}", data);
+    }
+    pub fn decrypt(&self, data: &[u8]) -> Vec<u8>{
+        todo!("decrypt data: {:#?}", data);
+    }
+}
 
 #[derive(Debug, Clone, PartialOrd, PartialEq, Eq, Ord, Hash, Serialize, Deserialize)]
 pub struct Party {
