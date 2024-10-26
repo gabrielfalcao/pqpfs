@@ -22,6 +22,11 @@ impl From<&Vec<u8>> for RSAPrivateKey {
         Self::from_bytes(data).expect("expected valid RSA Private Key")
     }
 }
+impl From<&[u8]> for RSAPrivateKey {
+    fn from(data: &[u8]) -> RSAPrivateKey {
+        Self::from_bytes(data).expect("expected valid RSA Private Key")
+    }
+}
 
 impl PlainBytes for RSAPrivateKey {
     fn bytes(&self) -> Vec<u8> {
@@ -97,5 +102,20 @@ impl RSAPublicKey {
     fn from_inner(public_key: &RsaPublicKey) -> Result<RSAPublicKey> {
         let key = PublicKey::new(public_key.to_pkcs1_der()?.as_bytes());
         Ok(RSAPublicKey { key })
+    }
+}
+impl From<Vec<u8>> for RSAPublicKey {
+    fn from(data: Vec<u8>) -> RSAPublicKey {
+        Self::from_bytes(&data).expect("expected valid RSA Public Key")
+    }
+}
+impl From<&Vec<u8>> for RSAPublicKey {
+    fn from(data: &Vec<u8>) -> RSAPublicKey {
+        Self::from_bytes(data).expect("expected valid RSA Public Key")
+    }
+}
+impl From<&[u8]> for RSAPublicKey {
+    fn from(data: &[u8]) -> RSAPublicKey {
+        Self::from_bytes(data).expect("expected valid RSA Public Key")
     }
 }
