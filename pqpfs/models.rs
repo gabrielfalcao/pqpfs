@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
+use crate::traits::ID;
 
 #[derive(Debug, Clone, PartialOrd, PartialEq, Eq, Ord, Hash, Serialize, Deserialize)]
 pub struct Line {
@@ -36,7 +37,7 @@ pub struct CurvePublicKey {
 
 #[derive(Debug, Clone, PartialOrd, PartialEq, Eq, Ord, Hash, Serialize, Deserialize)]
 pub struct CurveKeypair {
-    id: Vec<u8>,
+    id: ID,
     private: CurvePrivateKey,
     public: CurvePublicKey,
 }
@@ -52,11 +53,17 @@ pub struct PublicKey {
 
 #[derive(Debug, Clone, PartialOrd, PartialEq, Eq, Ord, Hash, Serialize, Deserialize)]
 pub struct Keypair {
-    id: Vec<u8>,
+    id: ID,
     private: PrivateKey,
     public: PublicKey,
     lock: CurvePublicKey,
     salt: t16::Data,
+}
+
+#[derive(Debug, Clone, PartialOrd, PartialEq, Eq, Ord, Hash, Serialize, Deserialize)]
+pub struct Observer {
+    id: ID,
+    axis: Axis
 }
 
 #[derive(Debug, Clone, PartialOrd, PartialEq, Eq, Ord, Hash, Serialize, Deserialize)]
@@ -93,7 +100,7 @@ pub struct Rendezvous {
 
 #[derive(Debug, Clone, PartialOrd, PartialEq, Eq, Ord, Hash, Serialize, Deserialize)]
 pub struct TrustExchange {
-    id: Vec<u8>,
+    id: ID,
     rendezvous: Rendezvous,
     signer: PublicKey,
     signed: PublicKey,
@@ -102,7 +109,7 @@ pub struct TrustExchange {
 
 #[derive(Debug, Clone, PartialOrd, PartialEq, Eq, Ord, Hash, Serialize, Deserialize)]
 pub struct Signature {
-    id: Vec<u8>,
+    id: ID,
     salt: t16::Data,
     private: PrivateKey,
     public: PublicKey,
@@ -111,7 +118,7 @@ pub struct Signature {
 
 #[derive(Debug, Clone, PartialOrd, PartialEq, Eq, Ord, Hash, Serialize, Deserialize)]
 pub struct Identity {
-    id: Vec<u8>,
+    id: ID,
     created: PostQuantumPosition,
     updated: PostQuantumPosition,
     email: String,
@@ -121,7 +128,7 @@ pub struct Identity {
 
 #[derive(Debug, Clone, PartialOrd, PartialEq, Eq, Ord, Hash, Serialize, Deserialize)]
 pub struct PostQuantumPosition {
-    id: Vec<u8>,
+    id: ID,
     published: t16::Data,
     ot_secret: Vec<u8>,
     public_key_pair: Keypair,
@@ -131,7 +138,7 @@ pub struct PostQuantumPosition {
 
 #[derive(Debug, Clone, PartialOrd, PartialEq, Eq, Ord, Hash, Serialize, Deserialize)]
 pub struct KeyStuff {
-    id: Vec<u8>,
+    id: ID,
     current_quantum_position: PostQuantumPosition,
     quantum_positions: Vec<PostQuantumPosition>,
     public_key_pair: Keypair,
@@ -149,13 +156,13 @@ impl KeyStuff {
 
 #[derive(Debug, Clone, PartialOrd, PartialEq, Eq, Ord, Hash, Serialize, Deserialize)]
 pub struct Party {
-    id: Vec<u8>,
+    id: ID,
     peer_key_stuff: KeyStuff,
 }
 
 #[derive(Debug, Clone, PartialOrd, PartialEq, Eq, Ord, Hash, Serialize, Deserialize)]
 pub struct Authority {
-    id: Vec<u8>,
+    id: ID,
     key_stuff: KeyStuff,
     public_signature: Signature,
     private_signature: Signature,
@@ -205,8 +212,8 @@ pub struct SentOcurrence {
     id: PostQuantumPosition,
     whence: Whence,
     at: t16::Data,
-    source_peer_id: Vec<u8>,
-    destination_peer_id: Vec<u8>,
+    source_peer_id: ID,
+    destination_peer_id: ID,
     key_stuff: KeyStuff,
     signature: Signature,
     azimuth: Azimuth,
@@ -217,9 +224,9 @@ pub struct ReceiptOcurrence {
     id: PostQuantumPosition,
     whence: Whence,
     at: t16::Data,
-    source_peer_id: Vec<u8>,
+    source_peer_id: ID,
     source_peer_signature: Signature,
-    destination_peer_id: Vec<u8>,
+    destination_peer_id: ID,
     destination_peer_signature: Signature,
     key_stuff: KeyStuff,
     azimuth: Azimuth,
@@ -233,7 +240,7 @@ pub enum Ocurrence {
 
 #[derive(Debug, Clone, PartialOrd, PartialEq, Eq, Ord, Hash, Serialize, Deserialize)]
 pub struct Message {
-    id: Vec<u8>,
+    id: ID,
     published: PostQuantumPosition,
     message_key_pair: Keypair,
     peer_key_stuff: KeyStuff,
@@ -249,7 +256,7 @@ pub struct Message {
 pub struct Envelope {
     pqp: PostQuantumPosition,
     key_pair: Keypair,
-    id: Vec<u8>,
+    id: ID,
     signature: Signature,
     message: Message,
     stamps: BTreeMap<Signature, Ocurrence>,
