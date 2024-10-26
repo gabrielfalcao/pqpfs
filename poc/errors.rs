@@ -10,6 +10,7 @@ pub enum Error {
     ParseIntError(String),
     RSAError(String),
     PKCS8Error(String),
+    PKCS1Error(String),
 }
 
 impl Serialize for Error {
@@ -34,6 +35,7 @@ impl Display for Error {
                 Self::ParseIntError(s) => format!("{}", s),
                 Self::RSAError(s) => format!("{}", s),
                 Self::PKCS8Error(s) => format!("{}", s),
+                Self::PKCS1Error(s) => format!("{}", s),
             }
         )
     }
@@ -46,6 +48,7 @@ impl Error {
             Error::ParseIntError(_) => "ParseIntError",
             Error::RSAError(_) => "RSAError",
             Error::PKCS8Error(_) => "PKCS8Error",
+            Error::PKCS1Error(_) => "PKCS1Error",
         }
         .to_string()
     }
@@ -70,6 +73,11 @@ impl From<rsa::Error> for Error {
 impl From<rsa::pkcs8::Error> for Error {
     fn from(e: rsa::pkcs8::Error) -> Self {
         Error::PKCS8Error(format!("{}", e))
+    }
+}
+impl From<rsa::pkcs1::Error> for Error {
+    fn from(e: rsa::pkcs1::Error) -> Self {
+        Error::PKCS1Error(format!("{}", e))
     }
 }
 pub type Result<T> = std::result::Result<T, Error>;

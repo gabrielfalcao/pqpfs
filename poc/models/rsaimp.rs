@@ -1,6 +1,6 @@
 use super::base::{PrivateKey, PublicKey};
-use crate::errors::{Error, Result};
-use crate::traits::{PlainBytes, PlainKey};
+use crate::errors::Result;
+use crate::traits::PlainBytes;
 use rsa::pkcs1::{DecodeRsaPublicKey, EncodeRsaPublicKey};
 use rsa::pkcs8::{DecodePrivateKey, EncodePrivateKey};
 use rsa::{RsaPrivateKey, RsaPublicKey};
@@ -51,12 +51,18 @@ impl RSAPrivateKey {
         let key = PrivateKey::from(data);
         Ok(RSAPrivateKey { key })
     }
+    fn rsa(&self) -> RsaPrivateKey {
+        RsaPrivateKey::from_pkcs8_der(&self.bytes()).expect("valid private RSA key bytes")
+    }
     pub fn generate() -> Result<RSAPrivateKey> {
         let bits = 2048;
         let mut rng = rand::thread_rng();
         let private_key = RsaPrivateKey::new(&mut rng, bits)?;
         let key = PrivateKey::new(private_key.to_pkcs8_der()?.to_bytes().deref_mut());
         Ok(RSAPrivateKey { key })
+    }
+    pub fn public_key(&self) -> RSAPublicKey {
+        RSAPublicKey::from_inner(&self.rsa().to_public_key()).expect("valid RSA key bytes")
     }
 }
 #[derive(Debug, Clone, PartialOrd, PartialEq, Eq, Ord, Hash, Serialize, Deserialize)]
@@ -80,5 +86,16 @@ impl PlainBytes for RSAPublicKey {
     }
     fn len(&self) -> usize {
         self.key.len()
+    }
+}
+impl RSAPublicKey {
+    pub fn from_bytes(data: &[u8]) -> Result<RSAPublicKey> {
+        RsaPublicKey::from_pkcs1_der(data)?;
+        let key = PublicKey::new(data);
+        Ok(RSAPublicKey { key })
+    }
+    fn from_inner(public_key: &RsaPublicKey) -> Result<RSAPublicKey> {
+        let key = PublicKey::new(public_key.to_pkcs1_der()?.as_bytes());
+        Ok(RSAPublicKey { key })
     }
 }
