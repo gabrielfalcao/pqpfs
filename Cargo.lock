@@ -788,6 +788,7 @@ dependencies = [
  "enum-to-string",
  "flate2",
  "gzip",
+ "hex",
  "iocore",
  "otpauth",
  "pkcs5",

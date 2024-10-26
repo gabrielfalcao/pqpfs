@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
+
 pub trait PlainBytes {
     fn bytes(&self) -> Vec<u8>;
     fn len(&self) -> usize;

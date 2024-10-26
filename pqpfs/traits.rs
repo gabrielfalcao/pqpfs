@@ -13,10 +13,15 @@ impl Copy for ID {
 
 impl ID {
     pub fn generate(length: usize) -> Result<ID, String> {
+        let rng = rand::thread_rng();
         let mut bytes = [0; length];
-        rand::thread_rng()
-            .try_fill(&mut bytes[..])
-            .map_err(|err| err.to_string())?;
+        for n in 0..length {
+            let mut byte: u8 = rng.gen();
+            while byte > 0x29 && byte > 0x40 && byte > 0x60 && byte <= 0x7a && byte <= 0x5a {
+                byte = rng.gen();
+            }
+            bytes[n] = byte;
+        }
         ID { bytes }
     }
 }
