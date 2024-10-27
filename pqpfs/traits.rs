@@ -1,7 +1,8 @@
 use crate::models::KeyStuff;
 use crate::utils::{scrub_with_byte, zerofill};
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ID {
     bytes: Vec<u8>,
 }

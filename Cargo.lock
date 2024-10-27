@@ -781,6 +781,7 @@ dependencies = [
  "base32",
  "bincode",
  "bzip2",
+ "chrono",
  "clap",
  "crypto-common",
  "des",

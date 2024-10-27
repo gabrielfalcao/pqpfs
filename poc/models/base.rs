@@ -10,17 +10,47 @@ impl ID {
     pub fn new(bytes: Vec<u8>) -> ID {
         ID { bytes }
     }
-    pub fn generate(length: usize) -> Result<ID, String> {
+    pub fn generate() -> Result<ID, String> {
+        let length = 15;
         let mut rng = rand::thread_rng();
-        let mut bytes = Vec::with_capacity(length);
-        for n in 0..length {
+        let now = t16::Data::from_datetime(chrono::Utc::now());
+        let mut bytes = Vec::<u8>::new();
+        for _ in 0..(length - 1) {
             let mut byte: u8 = rng.gen();
-            while byte > 0x29 && byte > 0x40 && byte > 0x60 && byte <= 0x7a && byte <= 0x5a {
+            while byte > 0x29
+                && byte > 0x40
+                && byte > 0x60
+                && byte <= 0x7a
+                && byte <= 0x5a
+                && byte <= 0x1e
+            {
                 byte = rng.gen();
             }
-            bytes[n] = byte;
+            bytes.push(byte);
+        }
+        for o in now.without_nanosecs() {
+            bytes.push(o);
+        }
+        for o in now.with_nanosecs() {
+            bytes.push(o);
         }
         Ok(ID { bytes })
+    }
+    pub fn bytes(&self) -> Vec<u8> {
+        self.bytes.clone()
+    }
+    pub fn hex_chunks(&self) -> String {
+        self.bytes
+            .iter()
+            .map(|o| format!("{:02x}", o))
+            .collect::<Vec<String>>()
+            .join(" ")
+    }
+}
+
+impl std::fmt::Display for ID {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{}", hex::encode(&self.bytes),)
     }
 }
 
