@@ -3,6 +3,7 @@ use crate::errors::Result;
 use crate::traits::PlainBytes;
 use rsa::pkcs1::{DecodeRsaPublicKey, EncodeRsaPublicKey};
 use rsa::pkcs8::{DecodePrivateKey, EncodePrivateKey};
+use rsa::Pkcs1v15Encrypt;
 use rsa::{RsaPrivateKey, RsaPublicKey};
 use serde::{Deserialize, Serialize};
 use std::ops::DerefMut;
@@ -69,11 +70,16 @@ impl RSAPrivateKey {
     pub fn public_key(&self) -> RSAPublicKey {
         RSAPublicKey::from_inner(&self.rsa().to_public_key()).expect("valid RSA key bytes")
     }
+    pub fn decrypt(&self, data: &[u8]) -> Result<Vec<u8>> {
+        Ok(self.rsa().decrypt(Pkcs1v15Encrypt, &data)?.to_vec())
+    }
+
 }
 #[derive(Debug, Clone, PartialOrd, PartialEq, Eq, Ord, Hash, Serialize, Deserialize)]
 pub struct RSAPublicKey {
     key: PublicKey,
 }
+
 impl From<&RsaPublicKey> for RSAPublicKey {
     fn from(public_key: &RsaPublicKey) -> RSAPublicKey {
         let key = PublicKey::new(
@@ -102,6 +108,13 @@ impl RSAPublicKey {
     fn from_inner(public_key: &RsaPublicKey) -> Result<RSAPublicKey> {
         let key = PublicKey::new(public_key.to_pkcs1_der()?.as_bytes());
         Ok(RSAPublicKey { key })
+    }
+    fn rsa(&self) -> RsaPublicKey {
+        RsaPublicKey::from_pkcs1_der(&self.bytes()).expect("valid public RSA key bytes")
+    }
+    pub fn encrypt(&self, data: &[u8]) -> Result<Vec<u8>> {
+        let mut rng = rand::thread_rng();
+        Ok(self.rsa().encrypt(&mut rng, Pkcs1v15Encrypt, &data[..])?)
     }
 }
 impl From<Vec<u8>> for RSAPublicKey {
