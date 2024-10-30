@@ -1,8 +1,9 @@
-use serde::ser::SerializeStruct;
-use serde::{Serialize, Serializer};
 use std::fmt::Display;
 use std::num::ParseIntError;
 use std::string::FromUtf8Error;
+
+use serde::ser::SerializeStruct;
+use serde::{Serialize, Serializer};
 
 #[derive(Debug, Clone)]
 pub enum Error {
@@ -13,6 +14,10 @@ pub enum Error {
     PKCS1Error(String),
     HexDecodeError(String),
     DeserializationError(String),
+    StorageError(String),
+    SecurityFrameworkError(String),
+    EncryptionError(String),
+    DecryptionError(String),
 }
 
 impl Serialize for Error {
@@ -40,6 +45,10 @@ impl Display for Error {
                 Self::PKCS1Error(s) => format!("{}", s),
                 Self::HexDecodeError(s) => format!("{}", s),
                 Self::DeserializationError(s) => format!("{}", s),
+                Self::StorageError(s) => format!("{}", s),
+                Self::SecurityFrameworkError(s) => format!("{}", s),
+                Self::EncryptionError(s) => format!("{}", s),
+                Self::DecryptionError(s) => format!("{}", s),
             }
         )
     }
@@ -54,12 +63,21 @@ impl Error {
             Error::PKCS1Error(_) => "PKCS1Error",
             Error::HexDecodeError(_) => "HexDecodeError",
             Error::DeserializationError(_) => "DeserializationError",
+            Error::StorageError(_) => "StorageError",
+            Error::SecurityFrameworkError(_) => "SecurityFrameworkError",
+            Error::EncryptionError(_) => "EncryptionError",
+            Error::DecryptionError(_) => "DecryptionError",
         }
         .to_string()
     }
 }
 
 impl std::error::Error for Error {}
+impl From<security_framework::base::Error> for Error {
+    fn from(e: security_framework::base::Error) -> Self {
+        Error::SecurityFrameworkError(format!("{}", e))
+    }
+}
 impl From<ParseIntError> for Error {
     fn from(e: ParseIntError) -> Self {
         Error::ParseIntError(format!("{}", e))

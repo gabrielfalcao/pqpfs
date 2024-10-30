@@ -1,6 +1,8 @@
-use crate::traits::{PlainBytes, PlainKey};
 use rand::Rng;
 use serde::{Deserialize, Serialize};
+
+use crate::data::Data;
+use crate::Result;
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord, Hash, Deserialize, Serialize)]
 pub struct ID {
@@ -10,7 +12,8 @@ impl ID {
     pub fn new(bytes: Vec<u8>) -> ID {
         ID { bytes }
     }
-    pub fn generate() -> Result<ID, String> {
+
+    pub fn generate() -> Result<ID> {
         let length = 15;
         let mut rng = rand::thread_rng();
         let now = t16::Data::from_datetime(chrono::Utc::now());
@@ -20,9 +23,9 @@ impl ID {
             while byte > 0x29
                 && byte > 0x40
                 && byte > 0x60
-                && byte <= 0x7a
-                && byte <= 0x5a
-                && byte <= 0x1e
+                && byte <= 0x7A
+                && byte <= 0x5A
+                && byte <= 0x1E
             {
                 byte = rng.gen();
             }
@@ -36,9 +39,11 @@ impl ID {
         }
         Ok(ID { bytes })
     }
+
     pub fn bytes(&self) -> Vec<u8> {
         self.bytes.clone()
     }
+
     pub fn hex_chunks(&self) -> String {
         self.bytes
             .iter()
@@ -55,67 +60,16 @@ impl std::fmt::Display for ID {
 }
 
 #[derive(Debug, Clone, PartialOrd, PartialEq, Eq, Ord, Hash, Serialize, Deserialize)]
-pub struct PrivateKey {
-    data: PlainKey,
-}
-impl From<Vec<u8>> for PrivateKey {
-    fn from(data: Vec<u8>) -> PrivateKey {
-        let data = PlainKey::from(data);
-        PrivateKey { data }
-    }
-}
-impl From<&Vec<u8>> for PrivateKey {
-    fn from(data: &Vec<u8>) -> PrivateKey {
-        let data = PlainKey::from(data);
-        PrivateKey { data }
-    }
-}
-
-impl PrivateKey {
-    pub fn new(data: &[u8]) -> PrivateKey {
-        let data = PlainKey::new(data);
-        PrivateKey { data }
-    }
-}
-
-impl PlainBytes for PrivateKey {
-    fn bytes(&self) -> Vec<u8> {
-        self.data.bytes()
-    }
-    fn len(&self) -> usize {
-        self.data.len()
-    }
-}
-
-#[derive(Debug, Clone, PartialOrd, PartialEq, Eq, Ord, Hash, Serialize, Deserialize)]
-pub struct PublicKey {
-    data: PlainKey,
-}
-impl PublicKey {
-    pub fn new(data: &[u8]) -> PublicKey {
-        let data = PlainKey::new(data);
-        PublicKey { data }
-    }
-}
-impl From<Vec<u8>> for PublicKey {
-    fn from(data: Vec<u8>) -> PublicKey {
-        let data = PlainKey::from(data);
-        PublicKey { data }
-    }
-}
-
-impl PlainBytes for PublicKey {
-    fn bytes(&self) -> Vec<u8> {
-        self.data.bytes()
-    }
-    fn len(&self) -> usize {
-        self.data.len()
-    }
-}
-
-#[derive(Debug, Clone, PartialOrd, PartialEq, Eq, Ord, Hash, Serialize, Deserialize)]
-pub struct Keypair {
+pub struct Keypair<E: EncryptionKey, D: DecryptionKey> {
     id: ID,
-    private: PrivateKey,
-    public: PublicKey,
+    public: E,
+    private: D,
+}
+
+pub trait EncryptionKey {
+    fn encrypt(&self, data: &Data) -> Result<Data>;
+}
+
+pub trait DecryptionKey {
+    fn decrypt(&self, data: &Data) -> Result<Data>;
 }

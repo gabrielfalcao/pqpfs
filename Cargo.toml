@@ -15,6 +15,7 @@ enum-to-string = { path = "../gadgets/packages/enum-to-string" }
 flate2 = "1.0.34"
 gzip = "0.1.2"
 iocore = { path = "../gadgets/packages/iocore" }
+sanitation = { path = "../gadgets/packages/sanitation" }
 otpauth = "0.5.1"
 rand = "0.8.5"
 rsa = "0.9.6"
@@ -27,6 +28,8 @@ security-framework = { version = "3.0.0", features = ["OSX_10_13", "log"] }
 zeroize = { version = "1.8.1", features = ["derive", "serde", "std", "zeroize_derive"] }
 hex = "0.4.3"
 chrono = { version = "0.4.38", features = ["serde"] }
+chacha20 = { version = "0.9.1", features = ["std", "zeroize"] }
+kdbx-rs = "=0.5.2"
 
 
 [lib]
