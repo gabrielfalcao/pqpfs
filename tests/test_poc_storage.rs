@@ -1,4 +1,4 @@
-use pqpfs::{MacOSKeychainStorage, Result, StorageAccess, ID, Data};
+use pqpfs::{Data, MacOSKeychainStorage, Result, StorageAccess, ID};
 
 #[test]
 fn test_mac_os_keychain_storage() -> Result<()> {
