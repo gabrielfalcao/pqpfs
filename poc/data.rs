@@ -111,6 +111,19 @@ impl std::ops::Add for Data {
         )
     }
 }
+impl std::ops::Sub for Data {
+    type Output = Data;
+
+    fn sub(self, other: Data) -> Data {
+        Data::from(
+            self.to_vec()
+                .iter()
+                .zip(other.to_vec())
+                .map(|(s, o)| s - o)
+                .collect::<Vec<u8>>(),
+        )
+    }
+}
 impl Index<usize> for Data {
     type Output = u8;
 
