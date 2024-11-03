@@ -129,6 +129,19 @@ impl std::ops::Div for Data {
         )
     }
 }
+impl std::ops::Mul for Data {
+    type Output = Data;
+
+    fn mul(self, other: Data) -> Data {
+        Data::from(
+            self.to_vec()
+                .iter()
+                .zip(other.to_vec())
+                .map(|(s, o)| s * o)
+                .collect::<Vec<u8>>(),
+        )
+    }
+}
 impl Index<usize> for Data {
     type Output = u8;
 
