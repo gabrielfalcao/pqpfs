@@ -141,6 +141,19 @@ impl std::ops::Mul for Data {
         )
     }
 }
+impl std::ops::Rem for Data {
+    type Output = Data;
+
+    fn rem(self, other: Data) -> Data {
+        Data::from(
+            self.to_vec()
+                .iter()
+                .zip(other.to_vec())
+                .map(|(s, o)| s % o)
+                .collect::<Vec<u8>>(),
+        )
+    }
+}
 impl Index<usize> for Data {
     type Output = u8;
 

@@ -18,3 +18,8 @@ fn test_data_div() {
 fn test_data_mul() {
     assert_eq!(data![2, 3, 6] * data![10, 8, 6], data![20, 24, 36]);
 }
+
+#[test]
+fn test_data_rem() {
+    assert_eq!(data![12, 13, 16] % data![10, 8, 6], data![2, 5, 4]);
+}
