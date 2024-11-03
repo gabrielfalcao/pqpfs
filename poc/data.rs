@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use crate::utils::{drop, xor, xor_ip};
 use crate::Result;
 
-#[derive(Clone, PartialEq, PartialOrd, Eq, Ord, Hash, Deserialize, Serialize)]
+#[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Deserialize, Serialize)]
 pub struct Data {
     pub inner: Vec<u8>,
 }
@@ -45,14 +45,6 @@ impl Data {
 impl std::fmt::Display for Data {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{}", self.to_hex(""))
-    }
-}
-impl std::fmt::Debug for Data {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        for _ in 0..self.len() {
-            f.write_char('•')?;
-        }
-        Ok(())
     }
 }
 
@@ -120,6 +112,19 @@ impl std::ops::Sub for Data {
                 .iter()
                 .zip(other.to_vec())
                 .map(|(s, o)| s - o)
+                .collect::<Vec<u8>>(),
+        )
+    }
+}
+impl std::ops::Div for Data {
+    type Output = Data;
+
+    fn div(self, other: Data) -> Data {
+        Data::from(
+            self.to_vec()
+                .iter()
+                .zip(other.to_vec())
+                .map(|(s, o)| s / o)
                 .collect::<Vec<u8>>(),
         )
     }

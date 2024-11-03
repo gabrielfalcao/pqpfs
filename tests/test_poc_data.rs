@@ -14,3 +14,11 @@ fn test_data_sub() {
         Data::from(vec![1u8, 2u8, 3u8])
     );
 }
+
+#[test]
+fn test_data_div() {
+    assert_eq!(
+        Data::from(vec![20u8, 30u8, 60u8]) / Data::from(vec![2u8, 10u8, 20u8]),
+        Data::from(vec![10u8, 3u8, 3u8])
+    );
+}
