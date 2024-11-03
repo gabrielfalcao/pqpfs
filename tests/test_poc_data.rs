@@ -1,33 +1,20 @@
-use pqpfs::Data;
+use pqpfs::*;
 
 #[test]
 fn test_data_add() {
-    assert_eq!(
-        Data::from(vec![1u8, 2u8, 3u8]) + Data::from(vec![5u8, 8u8, 13u8]),
-        Data::from(vec![6u8, 10u8, 16u8])
-    );
+    assert_eq!(data![1, 2, 3] + data![5, 8, 13], data![6, 10, 16]);
 }
 #[test]
 fn test_data_sub() {
-    assert_eq!(
-        Data::from(vec![6u8, 10u8, 16u8]) - Data::from(vec![5u8, 8u8, 13u8]),
-        Data::from(vec![1u8, 2u8, 3u8])
-    );
+    assert_eq!(data![6, 10, 16] - data![5, 8, 13], data![1, 2, 3]);
 }
 
 #[test]
 fn test_data_div() {
-    assert_eq!(
-        Data::from(vec![20u8, 30u8, 60u8]) / Data::from(vec![2u8, 10u8, 20u8]),
-        Data::from(vec![10u8, 3u8, 3u8])
-    );
+    assert_eq!(data![20, 30, 60] / data![2, 10, 20], data![10, 3, 3]);
 }
-
 
 #[test]
 fn test_data_mul() {
-    assert_eq!(
-        Data::from(vec![2u8, 3u8, 6u8]) * Data::from(vec![10u8, 8u8, 6u8]),
-        Data::from(vec![20u8, 24u8, 36u8])
-    );
+    assert_eq!(data![2, 3, 6] * data![10, 8, 6], data![20, 24, 36]);
 }

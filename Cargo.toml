@@ -30,6 +30,7 @@ hex = "0.4.3"
 chrono = { version = "0.4.38", features = ["serde"] }
 chacha20 = { version = "0.9.1", features = ["std", "zeroize"] }
 kdbx-rs = "=0.5.2"
+quote = "1.0.37"
 
 
 [lib]

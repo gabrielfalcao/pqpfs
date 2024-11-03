@@ -1,4 +1,3 @@
-use std::fmt::Write;
 use std::ops::{BitXor, BitXorAssign, Drop, Index, IndexMut};
 
 use security_framework::os::macos::passwords::SecKeychainItemPassword;

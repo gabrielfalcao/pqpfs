@@ -914,6 +914,7 @@ dependencies = [
  "otpauth",
  "pkcs5",
  "pkcs8",
+ "quote",
  "rand",
  "rsa",
  "sanitation",

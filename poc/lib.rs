@@ -10,3 +10,4 @@ pub mod utils;
 pub use utils::*;
 pub mod storage;
 pub use storage::*;
+pub mod macros;
