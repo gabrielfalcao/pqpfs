@@ -23,3 +23,8 @@ fn test_data_mul() {
 fn test_data_rem() {
     assert_eq!(data![12, 13, 16] % data![10, 8, 6], data![2, 5, 4]);
 }
+
+#[test]
+fn test_data_xor() {
+    assert_eq!(data![0x0F, 0xF0, 0xAF] % data![0xff, 0xff, 0xff], data![0x0f, 0xf0, 0xaf]);
+}

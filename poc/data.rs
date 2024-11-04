@@ -78,8 +78,8 @@ impl Drop for Data {
 impl BitXor for Data {
     type Output = Self;
 
-    fn bitxor(self, rhs: Self) -> Self::Output {
-        Data::from(xor(&self.inner, &rhs.bytes()))
+    fn bitxor(self, other: Self) -> Self::Output {
+        Data::from(xor(&self.bytes(), &other.bytes()))
     }
 }
 
