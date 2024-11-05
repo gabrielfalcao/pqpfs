@@ -18,6 +18,7 @@ pub enum Error {
     SecurityFrameworkError(String),
     EncryptionError(String),
     DecryptionError(String),
+    InvalidKeyError(String),
 }
 
 impl Serialize for Error {
@@ -49,6 +50,7 @@ impl Display for Error {
                 Self::SecurityFrameworkError(s) => format!("{}", s),
                 Self::EncryptionError(s) => format!("{}", s),
                 Self::DecryptionError(s) => format!("{}", s),
+                Self::InvalidKeyError(s) => format!("{}", s),
             }
         )
     }
@@ -67,6 +69,7 @@ impl Error {
             Error::SecurityFrameworkError(_) => "SecurityFrameworkError",
             Error::EncryptionError(_) => "EncryptionError",
             Error::DecryptionError(_) => "DecryptionError",
+            Error::InvalidKeyError(_) => "InvalidKeyError",
         }
         .to_string()
     }
