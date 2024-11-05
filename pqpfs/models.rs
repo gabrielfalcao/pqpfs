@@ -70,7 +70,8 @@ pub struct Observer {
 pub struct Axis {
     id: Signature,
     value: u64,
-    angle: u64,
+    departure_angle: u64,
+    arrival_angle: u64,
     appearance: t16::Data,
 }
 

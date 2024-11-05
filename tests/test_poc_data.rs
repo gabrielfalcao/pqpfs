@@ -26,5 +26,15 @@ fn test_data_rem() {
 
 #[test]
 fn test_data_xor() {
-    assert_eq!(data![0x0F, 0xF0, 0xAF] % data![0xff, 0xff, 0xff], data![0x0f, 0xf0, 0xaf]);
+    assert_eq!(data![0x0F, 0xF0, 0xAF] % data![0xFF, 0xFF, 0xFF], data![0x0F, 0xF0, 0xAF]);
+}
+
+#[test]
+fn test_data_shl() {
+    assert_eq!(data![1, 2, 3] << data![1, 2, 3], data![2, 8, 24]);
+}
+
+#[test]
+fn test_data_shr() {
+    assert_eq!(data![2, 8, 24] >> data![1, 2, 3], data![1, 2, 3]);
 }

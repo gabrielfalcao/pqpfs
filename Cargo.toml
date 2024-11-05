@@ -31,6 +31,8 @@ chrono = { version = "0.4.38", features = ["serde"] }
 chacha20 = { version = "0.9.1", features = ["std", "zeroize"] }
 kdbx-rs = "=0.5.2"
 quote = "1.0.37"
+keccak = "0.1.5"
+ascon = "0.4.0"
 
 
 [lib]
