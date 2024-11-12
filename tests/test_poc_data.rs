@@ -38,3 +38,8 @@ fn test_data_shl() {
 fn test_data_shr() {
     assert_eq!(data![2, 8, 24] >> data![1, 2, 3], data![1, 2, 3]);
 }
+
+#[test]
+fn test_data_not() {
+    assert_eq!(!data![0b01010101], data![0b10101010]);
+}

@@ -1,4 +1,6 @@
-use std::ops::{Add, BitXor, BitXorAssign, Div, Drop, Index, IndexMut, Mul, Rem, Shl, Shr, Sub};
+use std::ops::{
+    Add, BitXor, BitXorAssign, Div, Drop, Index, IndexMut, Mul, Not, Rem, Shl, Shr, Sub,
+};
 
 use super::core::Data;
 use crate::utils::{drop, xor, xor_ip};
@@ -125,5 +127,13 @@ impl Index<usize> for Data {
 impl IndexMut<usize> for Data {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         self.inner.index_mut(index)
+    }
+}
+
+impl Not for Data {
+    type Output = Data;
+
+    fn not(self) -> Self::Output {
+        Data::from(self.to_vec().iter().map(|s| !s).collect::<Vec<u8>>())
     }
 }
