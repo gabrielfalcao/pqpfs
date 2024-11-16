@@ -19,6 +19,9 @@ pub enum Error {
     EncryptionError(String),
     DecryptionError(String),
     InvalidKeyError(String),
+    EncodingError(String),
+    DecodingError(String),
+    IOError(String),
 }
 
 impl Serialize for Error {
@@ -51,6 +54,9 @@ impl Display for Error {
                 Self::EncryptionError(s) => format!("{}", s),
                 Self::DecryptionError(s) => format!("{}", s),
                 Self::InvalidKeyError(s) => format!("{}", s),
+                Self::EncodingError(s) => format!("{}", s),
+                Self::DecodingError(s) => format!("{}", s),
+                Self::IOError(s) => format!("{}", s),
             }
         )
     }
@@ -70,6 +76,9 @@ impl Error {
             Error::EncryptionError(_) => "EncryptionError",
             Error::DecryptionError(_) => "DecryptionError",
             Error::InvalidKeyError(_) => "InvalidKeyError",
+            Error::DecodingError(_) => "DecodingError",
+            Error::EncodingError(_) => "EncodingError",
+            Error::IOError(_) => "IOError",
         }
         .to_string()
     }
@@ -79,6 +88,11 @@ impl std::error::Error for Error {}
 impl From<security_framework::base::Error> for Error {
     fn from(e: security_framework::base::Error) -> Self {
         Error::SecurityFrameworkError(format!("{}", e))
+    }
+}
+impl From<std::io::Error> for Error {
+    fn from(e: std::io::Error) -> Self {
+        Error::IOError(format!("{}", e))
     }
 }
 impl From<ParseIntError> for Error {
@@ -111,4 +125,10 @@ impl From<hex::FromHexError> for Error {
         Error::HexDecodeError(format!("{}", e))
     }
 }
+impl From<Box<bincode::ErrorKind>> for Error {
+    fn from(e: Box<bincode::ErrorKind>) -> Self {
+        Error::IOError(format!("{}", e))
+    }
+}
+
 pub type Result<T> = std::result::Result<T, Error>;
