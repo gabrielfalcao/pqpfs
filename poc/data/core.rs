@@ -1,4 +1,7 @@
+use std::cmp::Ordering;
+use std::collections::BTreeSet;
 use std::io::Write;
+use std::iter::Extend;
 
 use flate2::write::{DeflateDecoder, DeflateEncoder};
 use flate2::Compression;
@@ -15,16 +18,12 @@ impl Data {
         Data { inner }
     }
 
-    pub fn bytes(&self) -> Vec<u8> {
-        self.inner.clone()
-    }
-
     pub fn to_vec(&self) -> Vec<u8> {
         self.inner.clone()
     }
 
-    pub fn len(&self) -> usize {
-        self.inner.len()
+    pub fn bytes(&self) -> Vec<u8> {
+        self.to_vec()
     }
 
     pub fn to_hex(&self, sep: &str) -> String {
@@ -52,10 +51,110 @@ impl Data {
         d.write(bytes)?;
         Ok(Data::new(d.finish()?))
     }
+
+    pub fn iter(&self) -> DataIterator {
+        DataIterator::new(self)
+    }
+
+    pub fn filter(self, predicate: impl FnMut(&u8) -> bool) -> Data {
+        self.iter().filter(predicate).collect::<Data>()
+    }
+
+    pub fn map(self, predicate: impl FnMut(u8) -> u8) -> Data {
+        self.iter().map(predicate).collect::<Data>()
+    }
+
+    pub fn difference(&self, other: &Data) -> Data {
+        self.set().difference(&other.set()).cloned().collect()
+    }
+
+    pub fn intersection(&self, other: &Data) -> Data {
+        self.set().intersection(&other.set()).cloned().collect()
+    }
+
+    pub fn contains(&mut self, byte: u8) -> bool {
+        !self.inner.iter().filter(|c| **c == byte).collect::<Vec<_>>().is_empty()
+    }
+
+    pub fn sort_by(&mut self, f: impl FnMut(&u8, &u8) -> Ordering) {
+        self.inner.sort_by(f)
+    }
+
+    pub fn get(&mut self, index: usize) -> Option<u8> {
+        self.inner.get(index).map(|byte| *byte)
+    }
+
+    pub fn push(&mut self, byte: u8) {
+        self.inner.push(byte)
+    }
+
+    pub fn pop(&mut self) -> Option<u8> {
+        self.inner.pop()
+    }
+
+    pub fn set(&self) -> BTreeSet<u8> {
+        let mut set = BTreeSet::new();
+        for v in self.iter() {
+            set.insert(v);
+        }
+        set
+    }
+
+    pub fn len(&self) -> usize {
+        self.inner.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.inner.is_empty()
+    }
+
+    pub fn extend<T: Iterator<Item = u8>>(&mut self, iter: T) {
+        self.inner.extend(iter);
+    }
+
+    pub fn extended<T: Iterator<Item = u8>>(&self, iter: T) -> Data {
+        let mut data = self.clone();
+        data.extend(iter);
+        data
+    }
+
+    pub fn then<T>(&self, mut no_more: impl FnMut(Self) -> T) -> Option<T> {
+        if self.len() > 0 {
+            Some(no_more(self.clone()))
+        } else {
+            None
+        }
+    }
 }
 
 impl std::fmt::Display for Data {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{}", self.to_hex(""))
+    }
+}
+
+pub struct DataIterator {
+    data: Data,
+    pos: usize,
+}
+
+impl DataIterator {
+    pub fn new(data: &Data) -> DataIterator {
+        DataIterator {
+            data: data.clone(),
+            pos: 0,
+        }
+    }
+}
+
+impl std::iter::Iterator for DataIterator {
+    type Item = u8;
+
+    fn next(&mut self) -> Option<u8> {
+        if self.pos < self.data.len() {
+            self.data.get(self.pos)
+        } else{
+            None
+        }
     }
 }

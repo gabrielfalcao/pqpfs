@@ -15,13 +15,13 @@ impl BitXor for Data {
     type Output = Self;
 
     fn bitxor(self, other: Self) -> Self::Output {
-        Data::from(xor(&self.bytes(), &other.bytes()))
+        Data::from(xor(&self.to_vec(), &other.to_vec()))
     }
 }
 
 impl BitXorAssign for Data {
     fn bitxor_assign(&mut self, rhs: Self) {
-        xor_ip(&mut self.inner, &rhs.bytes())
+        xor_ip(&mut self.inner, &rhs.to_vec())
     }
 }
 
