@@ -114,7 +114,7 @@ fn test_rsa_public_key_from_bytes() {
 
 #[test]
 fn test_rsa_encrypt_decrypt() {
-    let private_key = RSAPrivateKey::from(&PRIVATE_KEY_BYTES.to_vec());
+    let private_key = RSAPrivateKey::generate().expect("RSAPrivateKey");
     let public_key = private_key.public_key();
 
     let data = Data::from(b"not post-quantum yet".to_vec());
