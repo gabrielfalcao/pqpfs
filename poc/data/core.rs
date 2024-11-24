@@ -133,26 +133,26 @@ impl std::fmt::Display for Data {
     }
 }
 
-pub struct DataIterator {
-    data: Data,
+pub struct DataIterator<'a> {
+    data: &'a Data,
     pos: usize,
 }
 
-impl DataIterator {
-    pub fn new(data: &Data) -> DataIterator {
+impl <'a>DataIterator<'a> {
+    pub fn new(data: &'a Data) -> DataIterator<'a> {
         DataIterator {
-            data: data.clone(),
+            data: data,
             pos: 0,
         }
     }
 }
 
-impl std::iter::Iterator for DataIterator {
+impl std::iter::Iterator for DataIterator<'_> {
     type Item = u8;
 
     fn next(&mut self) -> Option<u8> {
         if self.pos < self.data.len() {
-            self.data.get(self.pos)
+            Some(self.data[self.pos])
         } else{
             None
         }

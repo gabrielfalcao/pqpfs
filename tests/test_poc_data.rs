@@ -43,3 +43,15 @@ fn test_data_shr() {
 fn test_data_not() {
     assert_eq!(!data![0b01010101], data![0b10101010]);
 }
+
+#[test]
+fn test_data_iter() {
+    let sut = data![0x00, 0x01, 0x02, 0x03, 0x04, 0x05];
+    let mut pos = 0;
+    let mut items = Vec::new();
+    while pos < sut.len() {
+        items.push(sut[pos]);
+        pos += 1;
+    }
+    assert_eq!(items, vec![0x00, 0x01, 0x02, 0x03, 0x04, 0x05]);
+}

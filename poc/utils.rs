@@ -33,25 +33,23 @@ pub fn zerofill(data: &mut Vec<u8>) {
     scrub_with_byte(data, 0);
 }
 
-pub fn scrub(data: &mut Vec<u8>) {
-    let mut type_range = (0..u8::MAX).into_iter().collect::<Vec<u8>>();
-    type_range.reverse();
-
-    zerofill(data);
-    for k in type_range {
-        scrub_with_byte(data, k);
+pub fn discharge(data: &mut Vec<u8>) {
+    for k in 0..u8::MAX {
+        scrub_with_byte(data, u8::MAX ^ k);
     }
-    zerofill(data);
 }
-
-pub fn drop(data: &mut Vec<u8>) {
+pub fn rev(data: &mut Vec<u8>) {
     let length = data.len();
-    let other = (0..length).into_iter().map(|_| 0).collect::<Vec<u8>>();
-    xor_ip(data, &other);
+    for k in 0..length {
+        data[k] = data[k] ^ 0xFF;
+    }
+}
+pub fn drop(data: &mut Vec<u8>) {
+    rev(data);
     scrub_with_byte(data, 0x7);
     scrub_with_byte(data, 0x0);
     scrub_with_byte(data, 0x1);
     zerofill(data);
-    scrub(data);
+    discharge(data);
     zerofill(data);
 }

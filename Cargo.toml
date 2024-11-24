@@ -6,7 +6,7 @@ description = "Post-Quantum Perfect Forward Secrecy"
 
 [dependencies]
 clap = { version = "4.5.20", features = ["derive", "env", "string", "unicode", "wrap_help"] }
-serde = { version = "1.0.213", features = ["derive"] }
+serde = { version = "1.0.215", features = ["derive"] }
 base32 = "0.5.1"
 bincode = "1.3.3"
 bzip2 = "0.4.4"
@@ -40,3 +40,10 @@ name = "pqpfs"
 path = "poc/lib.rs"
 doctest = false
 bench = false
+
+[dev-dependencies]
+iai-callgrind = "0.14.0"
+
+[[bench]]
+name = "drop"
+path = "tests/bench_poc_drop.rs"
