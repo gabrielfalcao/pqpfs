@@ -43,6 +43,14 @@ impl RSAPrivateKey {
     pub fn decrypt(&self, data: &Data) -> Result<Data> {
         Ok(Data::from(self.rsa().decrypt(Pkcs1v15Encrypt, &data.bytes())?.to_vec()))
     }
+
+    pub fn to_flate_bytes(&self) -> Result<Vec<u8>> {
+        crate::to_flate_bytes(self)
+    }
+
+    pub fn from_deflate_bytes(bytes: &[u8]) -> Result<RSAPrivateKey> {
+        Ok(crate::from_deflate_bytes::<RSAPrivateKey>(bytes)?)
+    }
 }
 
 impl From<Data> for RSAPrivateKey {

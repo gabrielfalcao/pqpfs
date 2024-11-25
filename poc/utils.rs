@@ -1,4 +1,11 @@
-// XOR in place
+use std::io::Write;
+
+use flate2::write::{DeflateDecoder, DeflateEncoder};
+use flate2::Compression;
+use serde::{Deserialize, Serialize};
+
+use crate::errors::Result;
+
 pub fn xor_ip(a: &mut Vec<u8>, o: &Vec<u8>) {
     let alen = a.len();
     let olen = o.len();
@@ -52,4 +59,17 @@ pub fn drop(data: &mut Vec<u8>) {
     zerofill(data);
     discharge(data);
     zerofill(data);
+}
+
+pub fn to_flate_bytes<T: Serialize>(data: &T) -> Result<Vec<u8>> {
+    let mut e = DeflateEncoder::new(Vec::new(), Compression::best());
+    e.write(&bincode::serialize(data)?)?;
+    Ok(e.finish()?)
+}
+
+pub fn from_deflate_bytes<T: for<'a> Deserialize<'a>>(bytes: &[u8]) -> Result<T> {
+    let mut d = DeflateDecoder::new(Vec::new());
+    d.write(bytes)?;
+    let bytes = d.finish()?;
+    Ok(bincode::deserialize::<T>(&bytes)?)
 }
