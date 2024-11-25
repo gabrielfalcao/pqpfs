@@ -34,15 +34,18 @@ quote = "1.0.37"
 keccak = "0.1.5"
 ascon = "0.4.0"
 
+[profile.release]
+strip = true
+
+[profile.bench]
+debug = true
+strip = false
 
 [lib]
 name = "pqpfs"
 path = "poc/lib.rs"
 doctest = false
 bench = false
-
-[dev-dependencies]
-iai-callgrind = "0.14.0"
 
 [[bench]]
 name = "drop"
