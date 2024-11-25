@@ -1,7 +1,4 @@
 use pqpfs::{Data, EncryptionKey, PlainBytes, RSAPrivateKey, RSAPublicKey, ID};
-use iai_callgrind::{
-    library_benchmark, library_benchmark_group, main, LibraryBenchmarkConfig
-};
 
 pub const PRIVATE_KEY_BYTES: [u8; 1219] = [
     0x30, 0x82, 0x04, 0xBF, 0x02, 0x01, 0x00, 0x30, 0x0D, 0x06, 0x09, 0x2A, 0x86, 0x48, 0x86, 0xF7,
