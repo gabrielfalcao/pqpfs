@@ -49,7 +49,7 @@ impl RSAPrivateKey {
     }
 }
 impl DecryptionKey for RSAPrivateKey {
-    fn decrypt_bytes(&self, data: &[u8]) -> Result<Data> {
+    fn decrypt(&self, data: &[u8]) -> Result<Data> {
         Ok(Data::from_iter(self.rsa().decrypt(Pkcs1v15Encrypt, data)?))
     }
 }
@@ -144,7 +144,7 @@ impl PlainBytes for RSAPublicKey {
     }
 }
 impl EncryptionKey for RSAPublicKey {
-    fn encrypt_bytes(&self, data: &[u8]) -> Result<Data> {
+    fn encrypt(&self, data: &[u8]) -> Result<Data> {
         let mut rng = rand::thread_rng();
         Ok(Data::from_iter(self.rsa().encrypt(&mut rng, Pkcs1v15Encrypt, data)?))
     }

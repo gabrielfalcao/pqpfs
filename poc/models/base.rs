@@ -69,21 +69,9 @@ pub struct Keypair<E: EncryptionKey, D: DecryptionKey> {
 }
 
 pub trait EncryptionKey {
-    fn encrypt<T: IntoIterator<Item = u8, IntoIter = DataIterator>>(
-        &self,
-        data: T,
-    ) -> Result<Data> {
-        self.encrypt_bytes(&data.into_iter().collect::<Vec<u8>>())
-    }
-    fn encrypt_bytes(&self, data: &[u8]) -> Result<Data>;
+    fn encrypt(&self, data: &[u8]) -> Result<Data>;
 }
 
 pub trait DecryptionKey {
-    fn decrypt<T: IntoIterator<Item = u8, IntoIter = DataIterator>>(
-        &self,
-        data: T,
-    ) -> Result<Data> {
-        self.decrypt_bytes(&data.into_iter().collect::<Vec<u8>>())
-    }
-    fn decrypt_bytes(&self, data: &[u8]) -> Result<Data>;
+    fn decrypt(&self, data: &[u8]) -> Result<Data>;
 }
