@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 use std::collections::BTreeSet;
-use std::iter::Extend;
+use std::iter::{Extend, IntoIterator, Iterator};
 
 use serde::{Deserialize, Serialize};
 
@@ -10,6 +10,7 @@ use crate::Result;
 pub struct Data {
     pub inner: Vec<u8>,
 }
+
 impl Data {
     pub fn new(inner: Vec<u8>) -> Data {
         Data { inner }
@@ -125,18 +126,19 @@ impl std::fmt::Display for Data {
     }
 }
 
-pub struct DataIterator<'a> {
-    data: &'a Data,
+#[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash)]
+pub struct DataIterator {
+    data: Data,
     pos: usize,
 }
 
-impl<'a> DataIterator<'a> {
-    pub fn new(data: &'a Data) -> DataIterator<'a> {
-        DataIterator { data: data, pos: 0 }
+impl DataIterator {
+    pub fn new(data: &Data) -> DataIterator {
+        DataIterator { data: data.clone(), pos: 0 }
     }
 }
 
-impl std::iter::Iterator for DataIterator<'_> {
+impl Iterator for DataIterator {
     type Item = u8;
 
     fn next(&mut self) -> Option<u8> {
@@ -145,5 +147,14 @@ impl std::iter::Iterator for DataIterator<'_> {
         } else {
             None
         }
+    }
+}
+
+impl IntoIterator for Data {
+    type IntoIter = DataIterator;
+    type Item = u8;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
     }
 }

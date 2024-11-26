@@ -1,5 +1,5 @@
 use crate::data::Data;
-use crate::models::{DecryptionKey, EncryptionKey, ID};
+use crate::models::{/*DecryptionKey, EncryptionKey,*/ ID};
 use crate::utils::{scrub_with_byte, zerofill};
 use crate::Result;
 
@@ -38,13 +38,10 @@ pub trait Storage<O: StorageAccess> {
     fn pulverize(&self, id: &ID) -> Result<()> {
         let mut data = self.get(id)?;
 
-        let mut type_range = (0..u8::MAX).collect::<Vec<u8>>();
-        type_range.reverse();
-
         zerofill(&mut data.inner);
         self.update(&id, &data)?;
-        for k in type_range {
-            scrub_with_byte(&mut data.inner, k);
+        for k in 0..u8::MAX {
+            scrub_with_byte(&mut data.inner, u8::MAX ^ k);
             self.update(&id, &data)?;
         }
         zerofill(&mut data.inner);
@@ -53,21 +50,21 @@ pub trait Storage<O: StorageAccess> {
     }
 }
 
-pub trait KeyContainer<L: StorageAccess, E: EncryptionKey, D: DecryptionKey>: Storage<L> {
-    fn encryptor(&self) -> E;
-    fn decryptor(&self) -> D;
-
-    fn encrypt(&self, data: &Data) -> Result<Data> {
-        Ok(self.encryptor().encrypt(data)?)
-    }
-    fn decrypt(&self, data: &Data) -> Result<Data> {
-        Ok(self.decryptor().decrypt(data)?)
-    }
-    fn rekey(&mut self, id: &ID) -> Result<()> {
-        let keyed = &mut self.get(id)?;
-        self.delete(id)?;
-        let rekeyed = self.encrypt(&self.decrypt(&keyed)?)?;
-        self.create(id, &rekeyed)?;
-        Ok(())
-    }
-}
+// pub trait KeyContainer<L: StorageAccess, E: EncryptionKey, D: DecryptionKey>: Storage<L> {
+//     fn encryptor(&self) -> E;
+//     fn decryptor(&self) -> D;
+//
+//     fn encrypt(&self, data: &[u8]) -> Result<Data> {
+//         Ok(self.encryptor().encrypt(data.into_iter())?)
+//     }
+//     fn decrypt(&self, data: &[u8]) -> Result<Data> {
+//         Ok(self.decryptor().decrypt(data.into_iter())?)
+//     }
+//     fn rekey(&mut self, id: &ID) -> Result<()> {
+//         let keyed = &mut self.get(id)?;
+//         self.delete(id)?;
+//         let rekeyed = self.encrypt(&self.decrypt(&keyed)?)?;
+//         self.create(id, &rekeyed)?;
+//         Ok(())
+//     }
+// }

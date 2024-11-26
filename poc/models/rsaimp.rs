@@ -5,7 +5,7 @@ use rsa::pkcs8::{DecodePrivateKey, EncodePrivateKey};
 use rsa::{Pkcs1v15Encrypt, RsaPrivateKey, RsaPublicKey};
 use serde::{Deserialize, Serialize};
 
-use super::base::EncryptionKey;
+use super::base::{DecryptionKey, EncryptionKey};
 use crate::data::Data;
 use crate::errors::Result;
 use crate::traits::PlainBytes;
@@ -40,16 +40,17 @@ impl RSAPrivateKey {
         RSAPublicKey::from_inner(&self.rsa().to_public_key()).expect("valid RSA key bytes")
     }
 
-    pub fn decrypt(&self, data: &Data) -> Result<Data> {
-        Ok(Data::from(self.rsa().decrypt(Pkcs1v15Encrypt, &data.bytes())?.to_vec()))
-    }
-
     pub fn to_flate_bytes(&self) -> Result<Vec<u8>> {
         crate::to_flate_bytes(self)
     }
 
     pub fn from_deflate_bytes(bytes: &[u8]) -> Result<RSAPrivateKey> {
         Ok(crate::from_deflate_bytes::<RSAPrivateKey>(bytes)?)
+    }
+}
+impl DecryptionKey for RSAPrivateKey {
+    fn decrypt_bytes(&self, data: &[u8]) -> Result<Data> {
+        Ok(Data::from_iter(self.rsa().decrypt(Pkcs1v15Encrypt, data)?))
     }
 }
 
@@ -143,9 +144,9 @@ impl PlainBytes for RSAPublicKey {
     }
 }
 impl EncryptionKey for RSAPublicKey {
-    fn encrypt(&self, data: &Data) -> Result<Data> {
+    fn encrypt_bytes(&self, data: &[u8]) -> Result<Data> {
         let mut rng = rand::thread_rng();
-        Ok(Data::from(self.rsa().encrypt(&mut rng, Pkcs1v15Encrypt, &data.bytes())?))
+        Ok(Data::from_iter(self.rsa().encrypt(&mut rng, Pkcs1v15Encrypt, data)?))
     }
 }
 impl From<Data> for RSAPublicKey {
