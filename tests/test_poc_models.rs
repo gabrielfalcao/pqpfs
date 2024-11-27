@@ -113,14 +113,14 @@ fn test_rsa_public_key_from_bytes() {
 }
 
 #[test]
-fn test_rsa_encrypt_decrypt() {
-    let private_key = RSAPrivateKey::generate().expect("RSAPrivateKey");
-    let public_key = private_key.public_key();
-
-    let data = Data::from(b"not post-quantum yet".to_vec());
-    let ciphertext = public_key.encrypt(data.iter()).expect("encryption success");
+fn test_rsa_encrypt() {
+    let private_key = RSAPrivateKey::from(&PRIVATE_KEY_BYTES.to_vec());
+    let public_key = RSAPublicKey::from(&PUBLIC_KEY_BYTES.to_vec());
+    let data = b"not post-quantum yet".to_vec();
+    let ciphertext =
+        public_key.encrypt(data.iter().map(|byte|*byte)).expect("encryption success");
     let plaintext = private_key.decrypt(ciphertext.iter()).expect("decryption success");
-    assert_eq!(data, plaintext);
+    assert_eq!(data, plaintext.bytes());
 }
 
 #[test]

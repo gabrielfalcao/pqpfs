@@ -52,12 +52,12 @@ pub fn rev(data: &mut Vec<u8>) {
     }
 }
 pub fn drop(data: &mut Vec<u8>) {
-    // rev(data);
-    // // scrub_with_byte(data, 0x7);
-    // // scrub_with_byte(data, 0x0);
-    // // scrub_with_byte(data, 0x1);
-    // // zerofill(data);
-    // discharge(data);
+    rev(data);
+    scrub_with_byte(data, 0x7);
+    scrub_with_byte(data, 0x0);
+    scrub_with_byte(data, 0x1);
+    zerofill(data);
+    discharge(data);
     zerofill(data);
 }
 
@@ -72,4 +72,42 @@ pub fn from_deflate_bytes<T: for<'a> Deserialize<'a>>(bytes: &[u8]) -> Result<T>
     d.write(bytes)?;
     let bytes = d.finish()?;
     Ok(bincode::deserialize::<T>(&bytes)?)
+}
+
+pub fn chunk_padded(items: &[u8], chunk_size: usize, padding: u8) -> Vec<Vec<u8>> {
+    let rem = rem(items, chunk_size);
+    let mut items = items.iter().map(|byte| *byte).collect::<Vec<u8>>();
+
+    for _ in 0..rem {
+        items.push(padding)
+    }
+
+    let mut chunked = Vec::<Vec<u8>>::new();
+    for chunk in items.chunks(chunk_size) {
+        chunked.push(chunk.to_vec());
+    }
+    chunked
+}
+pub(crate) fn rem(items: &[u8], chunk_size: usize) -> usize {
+    if items.len() > chunk_size {
+        items.len() % chunk_size
+    } else if items.len() > 0 && chunk_size > items.len() {
+        chunk_size % items.len()
+    } else {
+        0
+    }
+}
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_rem() {
+        let data = vec![0x01, 0x10, 0xF1, 0x61];
+        assert_eq!(rem(&data, 6), 2);
+        let data = vec![0x01, 0x10, 0xF1, 0x61, 0x01, 0x10, 0xF1, 0x61];
+        assert_eq!(rem(&data, 6), 2);
+        let data = vec![];
+        assert_eq!(rem(&data, 6), 0);
+    }
 }
