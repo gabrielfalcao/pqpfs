@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 
 use super::base::{DecryptionKey, EncryptionKey};
 use crate::data::Data;
-use crate::errors::Result;
+use crate::errors::{Error, Result};
 use crate::traits::PlainBytes;
 
 #[derive(Debug, Clone, PartialOrd, PartialEq, Eq, Ord, Hash, Serialize, Deserialize)]
@@ -49,8 +49,12 @@ impl RSAPrivateKey {
     }
 }
 impl DecryptionKey for RSAPrivateKey {
-    fn decrypt(&self, data: &[u8]) -> Result<Data> {
-        Ok(Data::from_iter(self.rsa().decrypt(Pkcs1v15Encrypt, data)?))
+    fn decrypt_bytes(&self, data: &[u8]) -> Result<Data> {
+        Ok(Data::from_iter(
+            self.rsa()
+                .decrypt(Pkcs1v15Encrypt, data)
+                .map_err(|e| Error::RSAError(format!("decrypt {} bytes {}", data.len(), e)))?,
+        ))
     }
 }
 
@@ -144,9 +148,11 @@ impl PlainBytes for RSAPublicKey {
     }
 }
 impl EncryptionKey for RSAPublicKey {
-    fn encrypt(&self, data: &[u8]) -> Result<Data> {
+    fn encrypt_bytes(&self, data: &[u8]) -> Result<Data> {
         let mut rng = rand::thread_rng();
-        Ok(Data::from_iter(self.rsa().encrypt(&mut rng, Pkcs1v15Encrypt, data)?))
+        Ok(Data::from_iter(self.rsa().encrypt(&mut rng, Pkcs1v15Encrypt, data).map_err(
+            |e| Error::RSAError(format!("encrypt {} bytes {}", data.len(), e)),
+        )?))
     }
 }
 impl From<Data> for RSAPublicKey {

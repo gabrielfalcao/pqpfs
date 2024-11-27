@@ -52,12 +52,12 @@ pub fn rev(data: &mut Vec<u8>) {
     }
 }
 pub fn drop(data: &mut Vec<u8>) {
-    rev(data);
-    scrub_with_byte(data, 0x7);
-    scrub_with_byte(data, 0x0);
-    scrub_with_byte(data, 0x1);
-    zerofill(data);
-    discharge(data);
+    // rev(data);
+    // // scrub_with_byte(data, 0x7);
+    // // scrub_with_byte(data, 0x0);
+    // // scrub_with_byte(data, 0x1);
+    // // zerofill(data);
+    // discharge(data);
     zerofill(data);
 }
 

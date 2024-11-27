@@ -3,7 +3,7 @@ use std::iter::Iterator;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 
-use crate::data::{Data, DataIterator};
+use crate::data::Data;
 use crate::Result;
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord, Hash, Deserialize, Serialize)]
@@ -69,9 +69,15 @@ pub struct Keypair<E: EncryptionKey, D: DecryptionKey> {
 }
 
 pub trait EncryptionKey {
-    fn encrypt(&self, data: &[u8]) -> Result<Data>;
+    fn encrypt(&self, data: impl Iterator<Item = u8>) -> Result<Data> {
+        self.encrypt_bytes(&data.collect::<Vec<u8>>())
+    }
+    fn encrypt_bytes(&self, data: &[u8]) -> Result<Data>;
 }
 
 pub trait DecryptionKey {
-    fn decrypt(&self, data: &[u8]) -> Result<Data>;
+    fn decrypt(&self, data: impl Iterator<Item = u8>) -> Result<Data> {
+        self.decrypt_bytes(&data.collect::<Vec<u8>>())
+    }
+    fn decrypt_bytes(&self, data: &[u8]) -> Result<Data>;
 }

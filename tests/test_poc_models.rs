@@ -118,8 +118,8 @@ fn test_rsa_encrypt_decrypt() {
     let public_key = private_key.public_key();
 
     let data = Data::from(b"not post-quantum yet".to_vec());
-    let ciphertext = public_key.encrypt(&data).expect("encryption success");
-    let plaintext = private_key.decrypt(&ciphertext).expect("decryption success");
+    let ciphertext = public_key.encrypt(data.iter()).expect("encryption success");
+    let plaintext = private_key.decrypt(ciphertext.iter()).expect("decryption success");
     assert_eq!(data, plaintext);
 }
 
