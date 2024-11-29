@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::Result;
 
-#[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Deserialize, Serialize)]
+#[derive(Clone, PartialEq, PartialOrd, Eq, Ord, Hash, Deserialize, Serialize)]
 pub struct Data {
     pub inner: Vec<u8>,
 }
@@ -24,10 +24,10 @@ impl Data {
         self.to_vec()
     }
 
-    pub fn to_hex(&self, sep: &str) -> String {
+    pub fn to_hex(&self, sep: &str, hint: bool) -> String {
         self.inner
             .iter()
-            .map(|o| format!("{:02x}", o))
+            .map(|o| format!("{}{:02x}", if hint { "0x" } else { "" }, o))
             .collect::<Vec<String>>()
             .join(sep)
     }
@@ -118,12 +118,17 @@ impl Data {
             None
         }
     }
+}
 
+impl std::fmt::Debug for Data {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "data![{}]", self.to_hex(", ", true))
+    }
 }
 
 impl std::fmt::Display for Data {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", self.to_hex(""))
+        write!(f, "{}", self.to_hex("", false))
     }
 }
 
@@ -135,7 +140,10 @@ pub struct DataIterator {
 
 impl DataIterator {
     pub fn new(data: &Data) -> DataIterator {
-        DataIterator { data: data.clone(), pos: 0 }
+        DataIterator {
+            data: data.clone(),
+            pos: 0,
+        }
     }
 }
 
@@ -143,11 +151,9 @@ impl Iterator for DataIterator {
     type Item = u8;
 
     fn next(&mut self) -> Option<u8> {
-        if self.pos < self.data.len() {
-            Some(self.data[self.pos])
-        } else {
-            None
-        }
+        let item = self.data.get(self.pos);
+        self.pos += 1;
+        item
     }
 }
 

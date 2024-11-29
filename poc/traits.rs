@@ -42,7 +42,12 @@ pub trait EncryptionKey {
 
 pub trait DecryptionKey {
     fn decrypt(&self, data: impl Iterator<Item = u8>) -> Result<Data> {
-        self.decrypt_bytes(&data.collect::<Vec<u8>>())
+        let dec_sec = self.decrypt_bytes(&data.collect::<Vec<u8>>())?;
+        let mut data = Data::new(Vec::new());
+        for chunk in dec_sec.iter() {
+            data.extend(chunk.iter());
+        }
+        Ok(data)
     }
-    fn decrypt_bytes(&self, data: &[u8]) -> Result<Data>;
+    fn decrypt_bytes(&self, data: &[u8]) -> Result<DataSeq>;
 }

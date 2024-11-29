@@ -64,7 +64,7 @@ impl DataSeq {
     }
 
     pub fn len(&self) -> usize {
-        self.seq.len()
+        self.seq.iter().map(|data| data.len()).sum()
     }
 
     pub fn is_empty(&self) -> bool {
@@ -125,11 +125,9 @@ impl Iterator for DataSeqIterator {
     type Item = Data;
 
     fn next(&mut self) -> Option<Data> {
-        if self.pos < self.seq.len() {
-            Some(self.seq[self.pos].clone())
-        } else {
-            None
-        }
+        let item = self.seq.get(self.pos);
+        self.pos +=1;
+        item
     }
 }
 

@@ -14,13 +14,6 @@ pub struct RSAPrivateKey {
     key: Data,
 }
 impl RSAPrivateKey {
-    pub fn from_bytes(bytes: impl Into<Vec<u8>>) -> Result<RSAPrivateKey> {
-        let bytes = bytes.into();
-        RsaPrivateKey::from_pkcs8_der(&bytes)?;
-        let key = Data::from(bytes);
-        Ok(RSAPrivateKey { key })
-    }
-
     fn rsa(&self) -> RsaPrivateKey {
         RsaPrivateKey::from_pkcs8_der(&self.bytes()).expect("valid private RSA key bytes")
     }
@@ -39,6 +32,13 @@ impl RSAPrivateKey {
         RSAPublicKey::from_inner(&self.rsa().to_public_key()).expect("valid RSA key bytes")
     }
 
+    pub fn from_bytes(bytes: impl Into<Vec<u8>>) -> Result<RSAPrivateKey> {
+        let bytes = bytes.into();
+        RsaPrivateKey::from_pkcs8_der(&bytes)?;
+        let key = Data::from(bytes);
+        Ok(RSAPrivateKey { key })
+    }
+
     pub fn to_flate_bytes(&self) -> Result<Vec<u8>> {
         crate::to_flate_bytes(self)
     }
@@ -47,18 +47,33 @@ impl RSAPrivateKey {
         Ok(crate::from_deflate_bytes::<RSAPrivateKey>(bytes)?)
     }
 }
+impl EncryptionKey for RSAPublicKey {
+    fn encrypt_bytes(&self, data: &[u8]) -> Result<DataSeq> {
+        let mut rng = rand::thread_rng();
+        let mut ds = DataSeq::new();
+        for chunk in data.chunks(2048) {
+            ds.push(Data::from(
+                self.rsa()
+                    .encrypt(&mut rng, Pkcs1v15Encrypt, chunk)
+                    .map_err(|e| Error::RSAError(format!("encrypt {} bytes {}", data.len(), e)))?,
+            ));
+        }
+        Ok(ds)
+    }
+}
+
 impl DecryptionKey for RSAPrivateKey {
-    fn decrypt_bytes(&self, data: &[u8]) -> Result<Data> {
-        let mut decrypted = Data::new(Vec::new());
-        let data_seq = DataSeq::from_deflate_bytes(data)?;
-        for chunk in data_seq {
-            decrypted.extend(
+    fn decrypt_bytes(&self, data: &[u8]) -> Result<DataSeq> {
+        let enc_seq = DataSeq::from_deflate_bytes(data)?;
+        let mut dec_seq = DataSeq::new();
+        for chunk in enc_seq {
+            dec_seq.push(Data::from(
                 self.rsa()
                     .decrypt(Pkcs1v15Encrypt, &chunk.bytes())
-                    .map_err(|e| Error::RSAError(format!("decrypt {} bytes {}", chunk.len(), e)))?.iter().map(|byte|*byte)
-            );
+                    .map_err(|e| Error::RSAError(format!("decrypt {} bytes {}", chunk.len(), e)))?,
+            ));
         }
-        Ok(decrypted)
+        Ok(dec_seq)
     }
 }
 
@@ -120,6 +135,14 @@ impl RSAPublicKey {
         Ok(RSAPublicKey { key })
     }
 
+    pub fn to_flate_bytes(&self) -> Result<Vec<u8>> {
+        crate::to_flate_bytes(self)
+    }
+
+    pub fn from_deflate_bytes(bytes: &[u8]) -> Result<RSAPublicKey> {
+        Ok(crate::from_deflate_bytes::<RSAPublicKey>(bytes)?)
+    }
+
     pub fn from_inner(public_key: &RsaPublicKey) -> Result<RSAPublicKey> {
         let key = Data::new(public_key.to_pkcs1_der()?.as_bytes().to_vec());
         Ok(RSAPublicKey { key })
@@ -149,21 +172,6 @@ impl PlainBytes for RSAPublicKey {
 
     fn len(&self) -> usize {
         self.key.len()
-    }
-}
-impl EncryptionKey for RSAPublicKey {
-    fn encrypt_bytes(&self, data: &[u8]) -> Result<DataSeq> {
-        let mut rng = rand::thread_rng();
-        let mut ds = DataSeq::new();
-        for chunk in data.chunks(2048) {
-            ds.push(Data::from(
-                self.rsa()
-                    .encrypt(&mut rng, Pkcs1v15Encrypt, chunk)
-                    .map_err(|e| Error::RSAError(format!("encrypt {} bytes {}", data.len(), e)))?,
-
-            ));
-        }
-        Ok(ds)
     }
 }
 impl From<Data> for RSAPublicKey {
