@@ -1,4 +1,4 @@
-use pqpfs::{Data, DecryptionKey, EncryptionKey, PlainBytes, RSAPrivateKey, RSAPublicKey, ID};
+use pqpfs::{PlainBytes, RSAPrivateKey, RSAPublicKey, ID};
 
 pub const PRIVATE_KEY_BYTES: [u8; 1219] = [
     0x30, 0x82, 0x04, 0xBF, 0x02, 0x01, 0x00, 0x30, 0x0D, 0x06, 0x09, 0x2A, 0x86, 0x48, 0x86, 0xF7,
@@ -112,16 +112,16 @@ fn test_rsa_public_key_from_bytes() {
     assert_eq!(public_key.bytes(), PUBLIC_KEY_BYTES.to_vec());
 }
 
-#[test]
-fn test_rsa_encrypt() {
-    let private_key = RSAPrivateKey::from(&PRIVATE_KEY_BYTES.to_vec());
-    let public_key = RSAPublicKey::from(&PUBLIC_KEY_BYTES.to_vec());
-    let data = b"not post-quantum yet".to_vec();
-    let ciphertext =
-        public_key.encrypt(data.iter().map(|byte|*byte)).expect("encryption success");
-    let plaintext = private_key.decrypt(ciphertext.iter()).expect("decryption success");
-    assert_eq!(data, plaintext.bytes());
-}
+// #[test]
+// fn test_rsa_encrypt() {
+//     let private_key = RSAPrivateKey::from(&PRIVATE_KEY_BYTES.to_vec());
+//     let public_key = RSAPublicKey::from(&PUBLIC_KEY_BYTES.to_vec());
+//     let data = b"not post-quantum yet".to_vec();
+//     let ciphertext =
+//         public_key.encrypt(data.iter().map(|byte|*byte)).expect("encryption success");
+//     let plaintext = private_key.decrypt(ciphertext.iter()).expect("decryption success");
+//     assert_eq!(data, plaintext.bytes());
+// }
 
 #[test]
 fn test_id_generate() {

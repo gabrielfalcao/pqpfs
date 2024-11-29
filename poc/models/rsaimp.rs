@@ -5,10 +5,9 @@ use rsa::pkcs8::{DecodePrivateKey, EncodePrivateKey};
 use rsa::{Pkcs1v15Encrypt, RsaPrivateKey, RsaPublicKey};
 use serde::{Deserialize, Serialize};
 
-use super::base::{DecryptionKey, EncryptionKey};
-use crate::data::Data;
+use crate::data::{Data, DataSeq};
 use crate::errors::{Error, Result};
-use crate::traits::PlainBytes;
+use crate::traits::{DecryptionKey, EncryptionKey, PlainBytes};
 
 #[derive(Debug, Clone, PartialOrd, PartialEq, Eq, Ord, Hash, Serialize, Deserialize)]
 pub struct RSAPrivateKey {
@@ -50,11 +49,16 @@ impl RSAPrivateKey {
 }
 impl DecryptionKey for RSAPrivateKey {
     fn decrypt_bytes(&self, data: &[u8]) -> Result<Data> {
-        Ok(Data::from_iter(
-            self.rsa()
-                .decrypt(Pkcs1v15Encrypt, data)
-                .map_err(|e| Error::RSAError(format!("decrypt {} bytes {}", data.len(), e)))?,
-        ))
+        let mut decrypted = Data::new(Vec::new());
+        let data_seq = DataSeq::from_deflate_bytes(data)?;
+        for chunk in data_seq {
+            decrypted.extend(
+                self.rsa()
+                    .decrypt(Pkcs1v15Encrypt, &chunk.bytes())
+                    .map_err(|e| Error::RSAError(format!("decrypt {} bytes {}", chunk.len(), e)))?.iter().map(|byte|*byte)
+            );
+        }
+        Ok(decrypted)
     }
 }
 
@@ -148,11 +152,18 @@ impl PlainBytes for RSAPublicKey {
     }
 }
 impl EncryptionKey for RSAPublicKey {
-    fn encrypt_bytes(&self, data: &[u8]) -> Result<Data> {
+    fn encrypt_bytes(&self, data: &[u8]) -> Result<DataSeq> {
         let mut rng = rand::thread_rng();
-        Ok(Data::from_iter(self.rsa().encrypt(&mut rng, Pkcs1v15Encrypt, data).map_err(
-            |e| Error::RSAError(format!("encrypt {} bytes {}", data.len(), e)),
-        )?))
+        let mut ds = DataSeq::new();
+        for chunk in data.chunks(2048) {
+            ds.push(Data::from(
+                self.rsa()
+                    .encrypt(&mut rng, Pkcs1v15Encrypt, chunk)
+                    .map_err(|e| Error::RSAError(format!("encrypt {} bytes {}", data.len(), e)))?,
+
+            ));
+        }
+        Ok(ds)
     }
 }
 impl From<Data> for RSAPublicKey {
