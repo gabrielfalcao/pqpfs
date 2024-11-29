@@ -1,5 +1,4 @@
 use clap::*;
-use iocore::Path;
 use pqpfs::{Data, DecryptionKey, EncryptionKey, RSAPrivateKey, Result};
 use sanitation::SString;
 

@@ -64,7 +64,7 @@ impl DataSeq {
     }
 
     pub fn len(&self) -> usize {
-        self.seq.iter().map(|data| data.len()).sum()
+        self.seq.len()
     }
 
     pub fn is_empty(&self) -> bool {

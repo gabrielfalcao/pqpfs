@@ -51,7 +51,8 @@ impl EncryptionKey for RSAPublicKey {
     fn encrypt_bytes(&self, data: &[u8]) -> Result<DataSeq> {
         let mut rng = rand::thread_rng();
         let mut ds = DataSeq::new();
-        for chunk in data.chunks(2048) {
+        // https://datatracker.ietf.org/doc/html/rfc8017#section-7.2.1
+        for chunk in data.chunks((u8::MAX - 10).into()) {
             ds.push(Data::from(
                 self.rsa()
                     .encrypt(&mut rng, Pkcs1v15Encrypt, chunk)
