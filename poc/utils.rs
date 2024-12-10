@@ -1,6 +1,7 @@
-use std::io::Write;
+use std::io::{Write, Read};
 
-use flate2::write::{DeflateDecoder, DeflateEncoder};
+use flate2::read::DeflateDecoder;
+use flate2::write::DeflateEncoder;
 use flate2::Compression;
 use serde::{Deserialize, Serialize};
 
@@ -62,15 +63,16 @@ pub fn drop(data: &mut Vec<u8>) {
 }
 
 pub fn to_flate_bytes<T: Serialize>(data: &T) -> Result<Vec<u8>> {
-    let mut e = DeflateEncoder::new(Vec::new(), Compression::best());
-    e.write(&bincode::serialize(data)?)?;
+    let bytes = bincode::serialize(data)?;
+    let mut e = DeflateEncoder::new(Vec::with_capacity(bytes.len()), Compression::best());
+    e.write_all(&bytes)?;
     Ok(e.finish()?)
 }
 
 pub fn from_deflate_bytes<T: for<'a> Deserialize<'a>>(bytes: &[u8]) -> Result<T> {
-    let mut d = DeflateDecoder::new(Vec::new());
-    d.write(bytes)?;
-    let bytes = d.finish()?;
+    let mut d = DeflateDecoder::new(bytes);
+    let mut bytes = Vec::<u8>::with_capacity(bytes.len());
+    d.read_to_end(&mut bytes)?;
     Ok(bincode::deserialize::<T>(&bytes)?)
 }
 

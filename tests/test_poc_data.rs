@@ -55,3 +55,16 @@ fn test_data_iter() {
     }
     assert_eq!(items, vec![0x00, 0x01, 0x02, 0x03, 0x04, 0x05]);
 }
+
+#[test]
+fn test_data_random() {
+    let length: usize = u8::MAX.into();
+    let data = Data::random(rand::thread_rng(), length);
+    assert_eq!(data.len(), length);
+}
+
+#[test]
+fn test_data_eq() {
+    assert_eq!(data![1], data![1]);
+    assert_ne!(data![0, 0], data![0, 1]);
+}

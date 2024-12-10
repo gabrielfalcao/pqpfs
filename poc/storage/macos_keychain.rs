@@ -23,7 +23,7 @@ impl MacOSKeychainStorage {
     }
 
     fn get_bytes(&self, key: &ID) -> Result<Data> {
-        let key = hex::encode(&key.bytes());
+        let key = hex::encode(&key.to_bytes());
         let keychain = SecKeychain::default()?;
         let result = keychain.find_generic_password(&self.namespace, &key);
         match result {

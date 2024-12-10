@@ -1,21 +1,24 @@
-use std::iter::Iterator;
+use std::cmp::PartialEq;
+use std::fmt::Display;
 
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 
-use crate::Result;
+use crate::traits::PlainBytes;
+use crate::{Data, Result};
 
-#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord, Hash, Deserialize, Serialize)]
+#[derive(Debug, Clone, PartialOrd, Eq, Ord, Hash, Deserialize, Serialize)]
 pub struct ID {
-    bytes: Vec<u8>,
+    pub data: Data,
 }
 impl ID {
     pub fn new(bytes: Vec<u8>) -> ID {
-        ID { bytes }
+        let data = Data::new(bytes);
+        ID { data }
     }
 
     pub fn generate() -> Result<ID> {
-        let length = 15;
+        let length = 6;
         let mut rng = rand::thread_rng();
         let now = t16::Data::from_datetime(chrono::Utc::now());
         let mut bytes = Vec::<u8>::new();
@@ -38,24 +41,30 @@ impl ID {
         for o in now.with_nanosecs() {
             bytes.push(o);
         }
-        Ok(ID { bytes })
+        Ok(ID::new(bytes))
     }
 
-    pub fn bytes(&self) -> Vec<u8> {
-        self.bytes.clone()
+    pub fn to_bytes(&self) -> Vec<u8> {
+        self.data.to_bytes()
     }
-
-    pub fn hex_chunks(&self) -> String {
-        self.bytes
-            .iter()
-            .map(|o| format!("{:02x}", o))
-            .collect::<Vec<String>>()
-            .join(" ")
+}
+impl Display for ID {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{}", self.to_hex("", false))
+    }
+}
+impl PartialEq for ID {
+    fn eq(&self, other: &ID) -> bool {
+        self.data == other.data
     }
 }
 
-impl std::fmt::Display for ID {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", hex::encode(&self.bytes),)
+impl crate::traits::PlainBytes for ID {
+    fn to_bytes(&self) -> Vec<u8> {
+        self.data.to_bytes()
+    }
+
+    fn from_bytes(bytes: &[u8]) -> ID {
+        ID::new(bytes.to_vec())
     }
 }

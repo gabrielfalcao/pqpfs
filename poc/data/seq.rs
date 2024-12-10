@@ -1,9 +1,10 @@
 use std::iter::{Extend, IntoIterator, Iterator};
-use std::ops::{Index, IndexMut};
+use std::ops::Index;
 
 use serde::{Deserialize, Serialize};
 
 use super::core::Data;
+use crate::traits::PlainBytes;
 use crate::Result;
 
 #[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Deserialize, Serialize)]
@@ -25,19 +26,11 @@ impl DataSeq {
     }
 
     pub fn to_data(&self) -> Result<Data> {
-        Ok(Data::from(self.to_flate_bytes()?))
+        Ok(Data::from(self.to_plain_bytes()))
     }
 
     pub fn from_data(data: &Data) -> Result<DataSeq> {
-        DataSeq::from_deflate_bytes(&data.bytes())
-    }
-
-    pub fn to_flate_bytes(&self) -> Result<Vec<u8>> {
-        crate::to_flate_bytes(self)
-    }
-
-    pub fn from_deflate_bytes(bytes: &[u8]) -> Result<DataSeq> {
-        Ok(crate::from_deflate_bytes::<DataSeq>(bytes)?)
+        DataSeq::from_plain_bytes(&data.to_bytes())
     }
 
     pub fn iter(&self) -> DataSeqIterator {
@@ -49,14 +42,14 @@ impl DataSeq {
     }
 
     pub fn push(&mut self, byte: Data) {
-        self.length = self.length + 1;
+        self.length += 1;
         self.seq.push(byte);
     }
 
     pub fn pop(&mut self) -> Option<Data> {
         match self.seq.pop() {
             Some(data) => {
-                self.length = self.length - 1;
+                self.length -= 1;
                 Some(data)
             },
             None => None,
@@ -90,20 +83,14 @@ impl Index<usize> for DataSeq {
     }
 }
 
-impl IndexMut<usize> for DataSeq {
-    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
-        self.seq.index_mut(index)
-    }
-}
-
 impl Into<Data> for DataSeq {
     fn into(self) -> Data {
-        self.to_data().expect("deflate DataSeq")
+        self.to_data().expect("data bytes")
     }
 }
 impl From<&Data> for DataSeq {
     fn from(data: &Data) -> DataSeq {
-        DataSeq::from_data(data).expect("deflate DataSeq")
+        DataSeq::from_data(data).expect("data seq bytes")
     }
 }
 #[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash)]
@@ -126,7 +113,7 @@ impl Iterator for DataSeqIterator {
 
     fn next(&mut self) -> Option<Data> {
         let item = self.seq.get(self.pos);
-        self.pos +=1;
+        self.pos += 1;
         item
     }
 }
@@ -137,5 +124,15 @@ impl IntoIterator for DataSeq {
 
     fn into_iter(self) -> Self::IntoIter {
         self.iter()
+    }
+}
+
+impl PlainBytes for DataSeq {
+    fn to_bytes(&self) -> Vec<u8> {
+        self.to_plain_bytes()
+    }
+
+    fn from_bytes(bytes: &[u8]) -> DataSeq {
+        DataSeq::from_plain_bytes(bytes).expect("DataSeq::from_plain_bytes")
     }
 }

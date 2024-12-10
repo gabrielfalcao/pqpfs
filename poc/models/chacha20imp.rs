@@ -59,12 +59,12 @@ impl Chacha20Key {
 
 impl From<Data> for Chacha20Key {
     fn from(data: Data) -> Chacha20Key {
-        Self::from_bytes(data.bytes()).expect("expected valid Chacha20 Key")
+        Self::from_bytes(data.to_bytes()).expect("expected valid Chacha20 Key")
     }
 }
 impl From<&Data> for Chacha20Key {
     fn from(data: &Data) -> Chacha20Key {
-        Self::from_bytes(data.bytes()).expect("expected valid Chacha20 Key")
+        Self::from_bytes(data.to_bytes()).expect("expected valid Chacha20 Key")
     }
 }
 impl From<Vec<u8>> for Chacha20Key {
@@ -84,8 +84,8 @@ impl From<&[u8]> for Chacha20Key {
 }
 
 impl PlainBytes for Chacha20Key {
-    fn bytes(&self) -> Vec<u8> {
-        self.key.bytes()
+    fn to_bytes(&self) -> Vec<u8> {
+        self.key.to_bytes()
     }
 
     fn len(&self) -> usize {

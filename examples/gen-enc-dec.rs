@@ -18,7 +18,7 @@ fn main() -> Result<()> {
     let data = Data::new(plaintext);
     let ciphertext = public_key.encrypt(data.iter())?;
     let plaintext = private_key.decrypt(ciphertext.iter())?;
-    println!("{}", hex::encode(ciphertext.bytes()));
-    println!("{}", SString::from(plaintext.bytes()).unchecked_safe());
+    println!("{}", hex::encode(ciphertext.to_bytes()));
+    println!("{}", SString::from(plaintext.to_bytes()).unchecked_safe());
     Ok(())
 }

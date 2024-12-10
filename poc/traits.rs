@@ -1,9 +1,33 @@
 use std::iter::Iterator;
 
+use sanitation::SString;
+use serde::{Deserialize, Serialize};
+
 use crate::{Data, DataSeq, Result};
-pub trait PlainBytes {
-    fn bytes(&self) -> Vec<u8>;
-    fn len(&self) -> usize;
+
+pub trait PlainBytes: for<'a> Deserialize<'a> + Serialize + Sized{
+    fn to_bytes(&self) -> Vec<u8>;
+    fn from_bytes(bytes: &[u8]) -> Self;
+
+    fn to_plain_bytes(&self) -> Vec<u8> {
+        bincode::serialize(self).expect("bytes")
+    }
+    fn from_plain_bytes(bytes: &[u8]) -> Result<Self> {
+        Ok(bincode::deserialize::<Self>(&bytes)?)
+    }
+    fn to_flate_bytes(&self) -> Result<Vec<u8>> {
+        crate::to_flate_bytes(self)
+    }
+    fn from_deflate_bytes(bytes: &[u8]) -> Result<Self> {
+        Ok(crate::from_deflate_bytes::<Self>(bytes)?)
+    }
+    fn to_hex(&self, sep: &str, hint: bool) -> String {
+        self.to_bytes()
+            .iter()
+            .map(|o| format!("{}{:02x}", if hint && sep.len() > 0 { "0x" } else { "" }, o))
+            .collect::<SString>()
+            .unchecked_safe()
+    }
 }
 
 pub trait SignedBytes<T: PlainBytes> {
@@ -42,12 +66,13 @@ pub trait EncryptionKey {
 
 pub trait DecryptionKey {
     fn decrypt(&self, data: impl Iterator<Item = u8>) -> Result<Data> {
-        let dec_sec = self.decrypt_bytes(&data.collect::<Vec<u8>>())?;
+        let enc_seq = DataSeq::from_data(&Data::new(data.collect::<Vec<u8>>()))?;
+        let dec_sec = self.decrypt_bytes(enc_seq)?;
         let mut data = Data::new(Vec::new());
         for chunk in dec_sec.iter() {
             data.extend(chunk.iter());
         }
         Ok(data)
     }
-    fn decrypt_bytes(&self, data: &[u8]) -> Result<DataSeq>;
+    fn decrypt_bytes(&self, data: DataSeq) -> Result<DataSeq>;
 }

@@ -135,5 +135,4 @@ impl From<Box<bincode::ErrorKind>> for Error {
         Error::IOError(format!("{}", e))
     }
 }
-
 pub type Result<T> = std::result::Result<T, Error>;

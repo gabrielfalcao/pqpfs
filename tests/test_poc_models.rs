@@ -1,4 +1,7 @@
-use pqpfs::{PlainBytes, RSAPrivateKey, RSAPublicKey, ID, EncryptionKey, DecryptionKey, data};
+use pqpfs::{
+    data, Data, DecryptionKey, DesKey, EncryptionKey, PlainBytes, RSAPrivateKey, RSAPublicKey,
+    Result, ID,
+};
 
 pub const PRIVATE_KEY_BYTES: [u8; 1219] = [
     0x30, 0x82, 0x04, 0xBF, 0x02, 0x01, 0x00, 0x30, 0x0D, 0x06, 0x09, 0x2A, 0x86, 0x48, 0x86, 0xF7,
@@ -103,36 +106,75 @@ const PUBLIC_KEY_BYTES: [u8; 270] = [
 #[test]
 fn test_rsa_private_key_from_bytes() {
     let private_key = RSAPrivateKey::from(&PRIVATE_KEY_BYTES.to_vec());
-    assert_eq!(private_key.bytes(), PRIVATE_KEY_BYTES.to_vec());
+    assert_eq!(private_key.to_bytes(), PRIVATE_KEY_BYTES.to_vec());
 }
 
 #[test]
 fn test_rsa_public_key_from_bytes() {
     let public_key = RSAPublicKey::from(&PUBLIC_KEY_BYTES.to_vec());
-    assert_eq!(public_key.bytes(), PUBLIC_KEY_BYTES.to_vec());
+    assert_eq!(public_key.to_bytes(), PUBLIC_KEY_BYTES.to_vec());
 }
 
 #[test]
 fn test_rsa_encrypt() {
-    let public_key = RSAPublicKey::from(&PUBLIC_KEY_BYTES.to_vec());
-    let data = (0..u8::MAX).map(|s|s % u8::MAX).collect::<Vec<u8>>();
-    let ciphertext =
-        public_key.encrypt(data.iter().map(|byte|*byte)).expect("encryption success");
-    assert_eq!(ciphertext.len() > 1, true);
-}
-
-
-#[test]
-fn test_rsa_decrypt() {
     let private_key = RSAPrivateKey::from(&PRIVATE_KEY_BYTES.to_vec());
-
-    let ciphertext = data![1, 24, 1, 231, 254, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 112, 124, 149, 33, 233, 135, 35, 27, 131, 22, 83, 18, 244, 81, 73, 183, 55, 24, 128, 209, 108, 233, 222, 112, 85, 34, 228, 161, 206, 237, 44, 185, 177, 97, 178, 11, 196, 237, 229, 10, 147, 79, 40, 169, 164, 220, 211, 82, 0, 17, 101, 237, 208, 126, 17, 44, 82, 1, 124, 205, 229, 119, 194, 0, 56, 178, 90, 84, 13, 132, 149, 218, 10, 10, 164, 27, 111, 115, 86, 176, 177, 137, 236, 250, 2, 191, 227, 218, 13, 237, 143, 212, 131, 233, 134, 77, 75, 221, 148, 75, 209, 228, 117, 117, 160, 98, 231, 97, 164, 125, 101, 190, 80, 144, 219, 152, 51, 112, 73, 111, 9, 154, 20, 143, 128, 167, 186, 65, 32, 12, 163, 223, 63, 198, 73, 167, 246, 69, 197, 19, 88, 136, 104, 102, 61, 94, 225, 17, 238, 19, 220, 39, 120, 175, 177, 38, 77, 137, 201, 202, 198, 34, 202, 141, 231, 234, 241, 231, 75, 255, 4, 125, 188, 175, 37, 166, 194, 182, 54, 190, 30, 251, 10, 199, 225, 35, 194, 69, 18, 38, 73, 202, 101, 32, 138, 229, 27, 73, 240, 243, 70, 24, 141, 113, 40, 248, 17, 107, 200, 89, 126, 178, 210, 208, 35, 233, 109, 39, 72, 121, 205, 212, 157, 204, 2, 172, 97, 128, 208, 93, 159, 83, 19, 205, 120, 234, 110, 3, 116, 247, 69, 45, 245, 138, 105, 219, 6, 203, 217, 145, 142, 111, 150, 73, 237, 218, 1, 0, 0, 0, 0, 0, 0, 0];
+    let public_key = RSAPublicKey::from(&PUBLIC_KEY_BYTES.to_vec());
+    let data = (0..u8::MAX).map(|s| s % u8::MAX);
+    let ciphertext = public_key.encrypt(data).expect("encryption success");
+    assert_eq!(ciphertext.len() > 1, true);
     let plaintext = private_key.decrypt(ciphertext.iter()).expect("decryption success");
-    assert_eq!(plaintext, data![0x74, 0x65, 0x73, 0x74]);
+    assert_eq!(plaintext, Data::new((0..u8::MAX).collect::<Vec<u8>>()));
 }
 
 #[test]
 fn test_id_generate() {
     let id = ID::generate().expect("expected random ID to be generated");
-    assert_eq!(id.bytes().len(), 32);
+    assert_eq!(id.to_bytes().len(), 23);
+}
+#[test]
+fn test_id_eq() {
+    assert_eq!(ID::new(vec![0, 1]), ID::new(vec![0, 1]));
+    assert_ne!(&ID::new(vec![0, 0]), &ID::new(vec![0, 1]));
+}
+
+#[test]
+fn test_rsa_to_hex_from_hex() -> Result<()> {
+    let private_key = RSAPrivateKey::from(&PRIVATE_KEY_BYTES.to_vec());
+    let to_hex = private_key.to_hex("", false);
+    assert_eq!(&to_hex, "308204bf020100300d06092a864886f70d0101010500048204a9308204a50201000282010100b783074d3b87d21d40f8e4450a330e781cf815a5d1768c0420786fcf0ef5c32416da9787cf438f1e9227a528d13db39bb1d4b414563d1b59c47ad664bb13ab16e2557210c677f5482b3870c9e0f8e4cdc143af03b312d286659b7fd2db4959ddec7ef72f53e4212fb623127d77e1b287c552cfa4535128a00af0645b47d9a005b34ecbb4852e7c783ab2cca0d152a69405b8bd17944d8648e769a09c6ef870c2cd7d7a38baea27552ebb65b509945e3f90c53196e21fb97e4724d312138df837efceb50b28f44a7ca646b34d5c44be2b315025d102608d4836f865ac95cc136630c6bfb3b830b884a97e7df38c56e91e69e144dd2ec661a128432b88b2f302bd0203010001028201010081c64d819699c4431fd1634c579c279d558f336fe2231d7d45a126209d89bb0868890923e7b4f51f3f687de9d19efac71e093798322c608d28df5d823ab1fc09e0e1601af0dfa03bfb249cce87243c5a2d543a0e39b313e22b34be3e5509185e5282af376ef2236de436053b696dd89d1f3422d7287c7a68439420c454995809bc163042724d492ce61bf036c2c59005265cbc31cdfaae74086c86c2966b375bbf39d4ef40db86bbc0b8a3c1e41dc10dd9be776f830b35523e86368f35bacb4eaf9c8b438c288143151c1fc6f0d5d36fb85766c7a392f8191f0cb9966b71cc3f424008230ab9ad477bf67fe2130eef26bf79f097ff12911dee81343eb79bf79902818100c59432fd23bdde27c8feded0f86e8ae8be61ff540755640104a09e76dae25a730c947b0a42c0d65ffa95fd43a5eb3d1606d6d18c063e317c6e144ac8903f1eafad22c68a040f4292395e2b8a601eb2c2228dc72f1230fea654997f09971c3fd2e86b5a93f87be04856be898e2249eb94fd3f56d1356127915f49f9bf6a886c9702818100edc604807069191ab9927ca39bb587332e5136eac48bb682935736d8f56a17a498098d6bcb57f306ba505b7e1559189d223d33d4c1e79af4d89646ca696413b5deace3502159216ff6af1f99f94e224513e3dbe755edac31cd7b253c5384a4e4fc6be89d548b131c8e26c5eab4cd71e67355a021577308f1436a756df76431cb02818100c13b4a8ed648d81f72ed093fb8e86bc46a85ef2fe0283c30deb4b3a62c361a1dd0dcda64d39a434f050571f79a2ab1c87c11d648aac662a17e0b2c8470c6ba9d37a7fe22770bf1a08ea8b1ce98690d8cde3c68e479571f85ced17c3405eca3e3025a13f109a1255dba3088d95061991c527d82cc02f7acb9f946a111faffc7ab0281803730bb62c4b4e06adfa02ce61d0269bb6b88d6626ff4ae0c68fed9704aa6b18e36ec20b360a3ad79664db8aeef6d9ad4fe598e6a5807d663f6d20ae478ca0df92d129c40c13cdb120e0460257144bd97a32244acd1b9353aea232765754d58a8fe1e5e0406d7b13bf392f465a249fda22c2b37dc055c623afe16fbe2e6858f39028181009c654b00636a7c3a63e5ce2b18bc9c14d7a8c861b508682afc5c80e88fedb98b26d737c602fab1527d89c5b4d5e8315b275231e86346fc472a309e3c7809e9f57cb9ea56e0d5da76c118aa96139f46bad90376f539e21583d92268d9809b50253fb0634bff7a0ba7ea9abd1766af684225aa632c165224b2f053e439d9a02df0");
+    let bytes = hex::decode(&to_hex)?;
+    assert_eq!(RSAPrivateKey::from(&bytes), private_key);
+    Ok(())
+}
+
+#[test]
+fn test_des_transcrypt() -> Result<()> {
+    let key = DesKey::new([0x34; 8], [0x5E; 8]);
+    let data = Data::from([0xF1; 0xF1].to_vec());
+    let ciphertext = key.encrypt(data.iter())?;
+    let plaintext = key.decrypt(ciphertext.iter())?;
+    assert_eq!(
+        plaintext,
+        data![
+            0x00, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1,
+            0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1,
+            0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1,
+            0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1,
+            0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1,
+            0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1,
+            0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1,
+            0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1,
+            0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1,
+            0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1,
+            0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1,
+            0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1,
+            0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1,
+            0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1,
+            0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1,
+            0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1,
+            0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1,
+            0xF1, 0xF1, 0xF1, 0xF1
+        ]
+    );
+    Ok(())
 }

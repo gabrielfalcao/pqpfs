@@ -4,12 +4,30 @@ use std::iter::{Extend, IntoIterator, Iterator};
 
 use serde::{Deserialize, Serialize};
 
+use crate::traits::PlainBytes;
 use crate::Result;
 
-#[derive(Clone, PartialEq, PartialOrd, Eq, Ord, Hash, Deserialize, Serialize)]
+#[derive(Clone, PartialOrd, Eq, Ord, Hash, Deserialize, Serialize)]
 pub struct Data {
     pub inner: Vec<u8>,
 }
+impl PartialEq for Data {
+    fn eq(&self, other: &Self) -> bool {
+        if self.inner.len() != other.inner.len() {
+            return false
+        }
+        let mut pos = 0;
+        let len = self.inner.len();
+        while pos < len {
+            if self.inner[pos] != other.inner[pos] {
+                return false
+            }
+            pos += 1;
+        }
+        true
+    }
+}
+
 
 impl Data {
     pub fn new(inner: Vec<u8>) -> Data {
@@ -20,8 +38,12 @@ impl Data {
         self.inner.clone()
     }
 
-    pub fn bytes(&self) -> Vec<u8> {
-        self.to_vec()
+    pub fn is_empty(&self) -> bool {
+        self.inner.is_empty()
+    }
+
+    pub fn to_bytes(&self) -> Vec<u8> {
+        self.inner.to_vec()
     }
 
     pub fn to_hex(&self, sep: &str, hint: bool) -> String {
@@ -97,10 +119,6 @@ impl Data {
         self.inner.len()
     }
 
-    pub fn is_empty(&self) -> bool {
-        self.inner.is_empty()
-    }
-
     pub fn extend<T: Iterator<Item = u8>>(&mut self, iter: T) {
         self.inner.extend(iter);
     }
@@ -118,6 +136,13 @@ impl Data {
             None
         }
     }
+
+    pub fn random<R: rand::CryptoRng + rand::RngCore>(mut random: R, length: usize) -> Data {
+        let mut bytes: Vec<u8> = Vec::with_capacity(length);
+        bytes.resize(length, 0);
+        random.fill_bytes(&mut bytes);
+        Data::new(bytes)
+    }
 }
 
 impl std::fmt::Debug for Data {
@@ -129,6 +154,16 @@ impl std::fmt::Debug for Data {
 impl std::fmt::Display for Data {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{}", self.to_hex("", false))
+    }
+}
+
+impl PlainBytes for Data {
+    fn to_bytes(&self) -> Vec<u8> {
+        self.to_vec()
+    }
+
+    fn from_bytes(bytes: &[u8]) -> Data {
+        Data::new(bytes.into())
     }
 }
 
@@ -163,5 +198,13 @@ impl IntoIterator for Data {
 
     fn into_iter(self) -> Self::IntoIter {
         self.iter()
+    }
+}
+
+pub trait ToData: PlainBytes {
+    fn to_data(&self) -> Data;
+    fn set_data(&mut self, data: &Data) -> Result<()>;
+    fn to_bytes(&self) -> Vec<u8> {
+        self.to_data().to_vec()
     }
 }

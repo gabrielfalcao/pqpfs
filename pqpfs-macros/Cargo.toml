@@ -1,0 +1,25 @@
+[package]
+name = "pqpfs-macros"
+version = "0.1.0"
+edition = "2021"
+autobins = false
+autoexamples = false
+autobenches = false
+autotests = false
+
+[dependencies]
+proc-macro2 = { version = "1.0.82", features = ["nightly", "span-locations"] }
+syn = { version = "2.0.60", features = ["full", "test"] }
+quote = "1.0.36"
+
+[lib]
+test = false
+doctest = false
+bench = false
+proc-macro = true
+name = "pqpfs_macros"
+path = "lib.rs"
+
+[[test]]
+name = "pqpfs_macros_test"
+path = "test.rs"
