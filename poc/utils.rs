@@ -105,19 +105,28 @@ pub enum Angle {
     Radian(f64),
     Displacement(f64),
 }
+impl Angle {
+    pub fn to_radian(&self) -> f64 {
+        use Angle::*;
+        match self {
+            Radian(val) => *val,
+            Displacement(val) => degree_to_radian(*val)
+        }
+    }
+    pub fn to_displacement(&self) -> f64 {
+        use Angle::*;
+        match self {
+            Radian(val) => radian_to_degree(*val),
+            Displacement(val) => *val
+        }
+    }
+}
 pub fn radian_to_degree(radian: f64) -> f64 {
     radian * 57.2958
 }
 pub fn degree_to_radian(degree: f64) -> f64 {
     degree / 57.2958
 }
-// pub fn angular_frequency(angle: Angle, secs: f64) -> f64 {
-//     use Angle::*;
-//     match angle {
-//         Radian(deg) => degree_to_radian(deg) / secs,
-//         Displacement(rad) => rad / secs
-//     }
-// }
 
 #[cfg(test)]
 mod tests {
@@ -136,14 +145,25 @@ mod tests {
     fn test_radian_to_degree() {
         assert_eq!(radian_to_degree(PI), 180.00006436155007);
         assert_eq!(radian_to_degree(TAU), 360.00012872310015);
+
+        assert_eq!(radian_to_degree(10.0), 572.958);
     }
     #[test]
     fn test_degree_to_radian() {
         assert_eq!(degree_to_radian(180.00006436155007), PI);
         assert_eq!(degree_to_radian(360.00012872310015), TAU);
+        assert_eq!(degree_to_radian(57.2958), 1.0);
+        assert_eq!(degree_to_radian(5.72958), 0.1);
+        assert_eq!(degree_to_radian(0.572958), 0.01);
     }
-    // #[test]
-    // fn test_angular_frequency() {
-    //     assert_eq!(angular_frequency(Angle::Radian(9.42), 5.40), 1.75);
-    // }
+    #[test]
+    fn test_angle_displacement_to_radian() {
+        assert_eq!(Angle::Displacement(180.00006436155007).to_radian(), PI);
+        assert_eq!(Angle::Displacement(360.00012872310015).to_radian(), TAU);
+    }
+    #[test]
+    fn test_angle_degree_to_radian() {
+        assert_eq!(Angle::Radian(PI).to_displacement(), 180.00006436155007);
+        assert_eq!(Angle::Radian(TAU).to_displacement(), 360.00012872310015);
+    }
 }
