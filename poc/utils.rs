@@ -1,4 +1,5 @@
-use std::io::{Write, Read};
+pub use std::f64::consts::{PI, TAU};
+use std::io::{Read, Write};
 
 use flate2::read::DeflateDecoder;
 use flate2::write::DeflateEncoder;
@@ -99,6 +100,25 @@ pub(crate) fn rem(items: &[u8], chunk_size: usize) -> usize {
         0
     }
 }
+
+pub enum Angle {
+    Radian(f64),
+    Displacement(f64),
+}
+pub fn radian_to_degree(radian: f64) -> f64 {
+    radian * 57.2958
+}
+pub fn degree_to_radian(degree: f64) -> f64 {
+    degree / 57.2958
+}
+// pub fn angular_frequency(angle: Angle, secs: f64) -> f64 {
+//     use Angle::*;
+//     match angle {
+//         Radian(deg) => degree_to_radian(deg) / secs,
+//         Displacement(rad) => rad / secs
+//     }
+// }
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -112,4 +132,18 @@ mod tests {
         let data = vec![];
         assert_eq!(rem(&data, 6), 0);
     }
+    #[test]
+    fn test_radian_to_degree() {
+        assert_eq!(radian_to_degree(PI), 180.00006436155007);
+        assert_eq!(radian_to_degree(TAU), 360.00012872310015);
+    }
+    #[test]
+    fn test_degree_to_radian() {
+        assert_eq!(degree_to_radian(180.00006436155007), PI);
+        assert_eq!(degree_to_radian(360.00012872310015), TAU);
+    }
+    // #[test]
+    // fn test_angular_frequency() {
+    //     assert_eq!(angular_frequency(Angle::Radian(9.42), 5.40), 1.75);
+    // }
 }
