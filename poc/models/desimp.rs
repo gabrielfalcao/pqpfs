@@ -1,11 +1,12 @@
 use des::cipher::block_padding::Pkcs7;
 use des::cipher::{BlockDecryptMut, BlockEncryptMut, Iv, Key, KeyIvInit};
 use des::Des;
+use rand::Rng;
 use serde::{Deserialize, Serialize};
 
 use crate::data::{Data, DataSeq};
 use crate::errors::{Error, Result};
-use crate::traits::{DecryptionKey, EncryptionKey, PlainBytes};
+use crate::traits::{DecryptionKey, EncryptionKey, Keygen, PlainBytes};
 use crate::utils::chunk_padded;
 
 type Des64CbcEnc = cbc::Encryptor<Des>;
@@ -32,6 +33,8 @@ impl DesKey {
 }
 
 impl EncryptionKey for DesKey {
+    type DecryptionKey = DesKey;
+
     fn encrypt_bytes(&self, data: &[u8]) -> Result<DataSeq> {
         let mut ds = DataSeq::new();
         let mut data = data.to_vec();
@@ -44,6 +47,8 @@ impl EncryptionKey for DesKey {
     }
 }
 impl DecryptionKey for DesKey {
+    type EncryptionKey = DesKey;
+
     fn decrypt_bytes(&self, data: DataSeq) -> Result<DataSeq> {
         let mut bytes = Vec::new();
         for chunk in data {
@@ -60,6 +65,17 @@ impl DecryptionKey for DesKey {
             ds.push(Data::from(chunk));
         }
         Ok(ds)
+    }
+}
+
+impl Keygen for DesKey {
+    fn generate() -> Result<DesKey> {
+        let mut rng = rand::thread_rng();
+        let mut key: [u8; 8] = [0u8; 8];
+        rng.fill(&mut key[..]);
+        let mut iv: [u8; 8] = [0u8; 8];
+        rng.fill(&mut iv[..]);
+        Ok(DesKey { key, iv })
     }
 }
 impl PlainBytes for DesKey {

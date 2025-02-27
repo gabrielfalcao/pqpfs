@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::data::{Data, DataSeq};
 use crate::errors::{Error, Result};
-use crate::traits::{DecryptionKey, EncryptionKey, PlainBytes};
+use crate::traits::{DecryptionKey, EncryptionKey, Keygen, PlainBytes};
 
 #[derive(Debug, Clone, PartialOrd, PartialEq, Eq, Ord, Hash, Serialize, Deserialize)]
 pub struct RSAPrivateKey {
@@ -18,17 +18,6 @@ pub struct RSAPrivateKey {
 impl RSAPrivateKey {
     fn rsa(&self) -> RsaPrivateKey {
         RsaPrivateKey::from_pkcs8_der(&self.to_bytes()).expect("valid private RSA key bytes")
-    }
-
-    pub fn generate() -> Result<RSAPrivateKey> {
-        let bits = 2048;
-        let mut rng = rand::thread_rng();
-        let exp = BigUint::from_u64(65537u64).expect("BigUint");
-        let private_key = RsaPrivateKey::new_with_exp(&mut rng, bits, &exp)?;
-        let mut data = private_key.to_pkcs8_der()?.to_bytes();
-        let data = data.deref_mut();
-        let key = Data::new(data.to_vec());
-        Ok(RSAPrivateKey { key })
     }
 
     pub fn public_key(&self) -> RSAPublicKey {
@@ -42,8 +31,14 @@ impl RSAPrivateKey {
     pub fn from_deflate_bytes(bytes: &[u8]) -> Result<RSAPrivateKey> {
         Ok(crate::from_deflate_bytes::<RSAPrivateKey>(bytes)?)
     }
+
+    pub fn to_vec(&self) -> Vec<u8> {
+        self.key.to_vec()
+    }
 }
 impl EncryptionKey for RSAPublicKey {
+    type DecryptionKey = RSAPrivateKey;
+
     fn encrypt_bytes(&self, data: &[u8]) -> Result<DataSeq> {
         let mut rng = rand::thread_rng();
         let mut ds = DataSeq::new();
@@ -59,6 +54,8 @@ impl EncryptionKey for RSAPublicKey {
     }
 }
 impl DecryptionKey for RSAPrivateKey {
+    type EncryptionKey = RSAPublicKey;
+
     fn decrypt_bytes(&self, data: DataSeq) -> Result<DataSeq> {
         let mut dec_seq = DataSeq::new();
         for chunk in data {
@@ -71,7 +68,21 @@ impl DecryptionKey for RSAPrivateKey {
         Ok(dec_seq)
     }
 }
+impl Keygen for RSAPrivateKey {
+    fn generate() -> Result<RSAPrivateKey> {
+        let bits = 2048;
+        let mut rng = rand::thread_rng();
+        let exp = BigUint::from_u64(65537u64).expect("BigUint");
+        let private_key = RsaPrivateKey::new_with_exp(&mut rng, bits, &exp)?;
+        let mut data = private_key.to_pkcs8_der()?.to_bytes();
+        let data = data.deref_mut();
+        let key = Data::new(data.to_vec());
+        Ok(RSAPrivateKey { key })
+    }
+}
 impl EncryptionKey for RSAPrivateKey {
+    type DecryptionKey = RSAPrivateKey;
+
     fn encrypt_bytes(&self, data: &[u8]) -> Result<DataSeq> {
         self.public_key().encrypt_bytes(data)
     }

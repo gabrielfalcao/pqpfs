@@ -1,6 +1,5 @@
 pub use pqpfs_macros::ToData;
 
-
 #[macro_export]
 macro_rules! data {
     ( $( $x:expr ),* ) => {
@@ -13,4 +12,10 @@ macro_rules! data {
             Data::from(data)
         }
     };
+}
+
+#[macro_export]
+macro_rules! impl_plain_bytes {
+    ($($x:expr),*) => {{
+    }};
 }

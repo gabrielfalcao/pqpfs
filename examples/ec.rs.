@@ -1,0 +1,19 @@
+use elliptic_curve::{FieldBytes, PublicKey, SecretKey};
+use p384::NistP384;
+use rand::rngs::OsRng;
+use generic_array::GenericArray;
+use generic_array::ArrayLength;
+use elliptic_curve::consts::U8;
+use elliptic_curve::consts::U48;
+
+fn main() {
+    let secret_key = SecretKey::<NistP384>::random(&mut OsRng);
+    let secret_key_data = secret_key.to_bytes().as_slice().to_vec();
+    let public_key = secret_key.public_key();
+    let public_key_data = public_key.to_sec1_bytes().to_vec();
+
+    let secret_key = SecretKey::<NistP384>::from_bytes(GenericArray::<U8, U48>::from_slice(&secret_key_data));
+    let public_key = PublicKey::<NistP384>::from_sec1_bytes(&public_key_data);
+    println!("secret_key: {}", hex::encode(&secret_key_data));
+    println!("public_key: {}", hex::encode(&public_key_data));
+}
