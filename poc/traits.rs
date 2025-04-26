@@ -2,13 +2,19 @@ use std::iter::Iterator;
 
 use sanitation::SString;
 use serde::{Deserialize, Serialize};
+use sha3::Digest;
+pub use sha3::Sha3_384;
 
 use crate::{Data, DataSeq, Result};
 
-pub trait PlainBytes: for<'a> Deserialize<'a> + Serialize + Sized{
-    fn to_bytes(&self) -> Vec<u8>;
-    fn from_bytes(bytes: &[u8]) -> Self;
-
+pub trait PlainBytes: for<'a> Deserialize<'a> + Serialize + Sized {
+    fn to_bytes(&self) -> Vec<u8> {
+        self.to_plain_bytes()
+    }
+    fn from_bytes(bytes: &[u8]) -> Self {
+        Self::from_plain_bytes(bytes)
+            .expect(&format!("{}::from_plain_bytes", std::any::type_name::<Self>()))
+    }
     fn to_plain_bytes(&self) -> Vec<u8> {
         bincode::serialize(self).expect("bytes")
     }
@@ -27,6 +33,15 @@ pub trait PlainBytes: for<'a> Deserialize<'a> + Serialize + Sized{
             .map(|o| format!("{}{:02x}", if hint && sep.len() > 0 { "0x" } else { "" }, o))
             .collect::<SString>()
             .unchecked_safe()
+    }
+    fn sha3384(&self) -> Vec<u8> {
+        let mut sha3_384 = Sha3_384::new();
+        sha3_384.update(&self.to_plain_bytes());
+        sha3_384.finalize().to_vec()
+    }
+    fn id3384(&self) -> String {
+        let bytes = self.sha3384();
+        hex::encode(&bytes[..8])
     }
 }
 
@@ -56,7 +71,8 @@ pub trait EphemeralDecryptionDevice {
     fn expires_at(&self) -> t16::Data;
 }
 
-pub trait EncryptionKey {
+pub trait EncryptionKey: Clone {
+    // type DecryptionKey;
     fn encrypt(&self, data: impl Iterator<Item = u8>) -> Result<Data> {
         let data_seq = self.encrypt_bytes(&data.collect::<Vec<u8>>())?;
         data_seq.to_data()
@@ -64,7 +80,8 @@ pub trait EncryptionKey {
     fn encrypt_bytes(&self, data: &[u8]) -> Result<DataSeq>;
 }
 
-pub trait DecryptionKey {
+pub trait DecryptionKey: Clone {
+    // type EncryptionKey;
     fn decrypt(&self, data: impl Iterator<Item = u8>) -> Result<Data> {
         let enc_seq = DataSeq::from_data(&Data::new(data.collect::<Vec<u8>>()))?;
         let dec_sec = self.decrypt_bytes(enc_seq)?;
@@ -75,4 +92,8 @@ pub trait DecryptionKey {
         Ok(data)
     }
     fn decrypt_bytes(&self, data: DataSeq) -> Result<DataSeq>;
+}
+
+pub trait Keygen: Clone {
+    fn generate() -> Result<Self>;
 }

@@ -42,21 +42,21 @@ impl Display for Error {
             "{}: {}",
             self.variant(),
             match self {
-                Self::InvalidUtf8(s) => format!("{}", s),
-                Self::ParseIntError(s) => format!("{}", s),
-                Self::RSAError(s) => format!("{}", s),
-                Self::PKCS8Error(s) => format!("{}", s),
-                Self::PKCS1Error(s) => format!("{}", s),
-                Self::HexDecodeError(s) => format!("{}", s),
-                Self::DeserializationError(s) => format!("{}", s),
-                Self::StorageError(s) => format!("{}", s),
-                Self::SecurityFrameworkError(s) => format!("{}", s),
-                Self::EncryptionError(s) => format!("{}", s),
-                Self::DecryptionError(s) => format!("{}", s),
-                Self::InvalidKeyError(s) => format!("{}", s),
-                Self::EncodingError(s) => format!("{}", s),
-                Self::DecodingError(s) => format!("{}", s),
-                Self::IOError(s) => format!("{}", s),
+                Self::InvalidUtf8(e) => e.to_string()
+                Self::ParseIntError(e) => e.to_string()
+                Self::RSAError(e) => e.to_string()
+                Self::PKCS8Error(e) => e.to_string()
+                Self::PKCS1Error(e) => e.to_string()
+                Self::HexDecodeError(e) => e.to_string()
+                Self::DeserializationError(e) => e.to_string()
+                Self::StorageError(e) => e.to_string()
+                Self::SecurityFrameworkError(e) => e.to_string()
+                Self::EncryptionError(e) => e.to_string()
+                Self::DecryptionError(e) => e.to_string()
+                Self::InvalidKeyError(e) => e.to_string()
+                Self::EncodingError(e) => e.to_string()
+                Self::DecodingError(e) => e.to_string()
+                Self::IOError(e) => e.to_string()
             }
         )
     }
