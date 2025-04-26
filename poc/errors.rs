@@ -42,21 +42,21 @@ impl Display for Error {
             "{}: {}",
             self.variant(),
             match self {
-                Self::InvalidUtf8(e) => e.to_string()
-                Self::ParseIntError(e) => e.to_string()
-                Self::RSAError(e) => e.to_string()
-                Self::PKCS8Error(e) => e.to_string()
-                Self::PKCS1Error(e) => e.to_string()
-                Self::HexDecodeError(e) => e.to_string()
-                Self::DeserializationError(e) => e.to_string()
-                Self::StorageError(e) => e.to_string()
-                Self::SecurityFrameworkError(e) => e.to_string()
-                Self::EncryptionError(e) => e.to_string()
-                Self::DecryptionError(e) => e.to_string()
-                Self::InvalidKeyError(e) => e.to_string()
-                Self::EncodingError(e) => e.to_string()
-                Self::DecodingError(e) => e.to_string()
-                Self::IOError(e) => e.to_string()
+                Self::InvalidUtf8(e) => e.to_string(),
+                Self::ParseIntError(e) => e.to_string(),
+                Self::RSAError(e) => e.to_string(),
+                Self::PKCS8Error(e) => e.to_string(),
+                Self::PKCS1Error(e) => e.to_string(),
+                Self::HexDecodeError(e) => e.to_string(),
+                Self::DeserializationError(e) => e.to_string(),
+                Self::StorageError(e) => e.to_string(),
+                Self::SecurityFrameworkError(e) => e.to_string(),
+                Self::EncryptionError(e) => e.to_string(),
+                Self::DecryptionError(e) => e.to_string(),
+                Self::InvalidKeyError(e) => e.to_string(),
+                Self::EncodingError(e) => e.to_string(),
+                Self::DecodingError(e) => e.to_string(),
+                Self::IOError(e) => e.to_string(),
             }
         )
     }
@@ -95,8 +95,8 @@ impl From<std::io::Error> for Error {
         Error::IOError(format!("{}", e))
     }
 }
-impl From<iocore::Exception> for Error {
-    fn from(e: iocore::Exception) -> Self {
+impl From<iocore::Error> for Error {
+    fn from(e: iocore::Error) -> Self {
         Error::IOError(format!("{}", e))
     }
 }
